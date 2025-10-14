@@ -4,7 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
-    "build": "npm --prefix ../frontend install && npm --prefix ../frontend run build && rm -rf client && mkdir -p client && cp -r ../frontend/dist/* client/"
+    "build": "npm --prefix ../frontend install && npm --prefix ../frontend run build && rm -rf client && mkdir -p client && cp -r ../frontend/dist/* client/",
     "dev": "nodemon index.js",
     "seed": "node src/seeds/seedDb.js"
   },
