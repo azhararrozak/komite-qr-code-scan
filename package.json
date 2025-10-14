@@ -1,0 +1,19 @@
+{
+  "name": "komite-qr-code-scan",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently -n FRONT,BACK -c green,cyan \"npm --prefix frontend run dev\" \"npm --prefix backend run dev\"",
+    "build": "npm --prefix frontend run build && echo 'Backend biasanya tak perlu build (JS murni)';",
+    "start": "concurrently -n FRONT,BACK -c green,cyan \"npm --prefix frontend run preview\" \"npm --prefix backend run start\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "nodemon": "^3.1.10"
+  }
+}
