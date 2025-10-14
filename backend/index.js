@@ -7,7 +7,7 @@ require('dotenv').config(); // Memuat variabel lingkungan dari file .env
 
 // --- INISIALISASI APLIKASI EXPRESS ---
 const app = express();
-const PORT = process.env.PORT || 5000; // Menggunakan port dari Railway atau default 5000
+const PORT = process.env.PORT || 8080; // Menggunakan port dari Railway atau default 5000
 
 // --- MIDDLEWARE ---
 app.use(cors()); // Mengaktifkan Cross-Origin Resource Sharing
