@@ -33,17 +33,31 @@ app.get('/', (req, res) => {
     res.send('Hello World');
 });
 
-const PORT = process.env.PORT || 3000;
+app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
 
 require('./src/routes/auth.routes')(app);
 require('./src/routes/user.routes')(app);
 require('./src/routes/student.routes')(app);
 require('./src/routes/payment.routes')(app);
 require('./src/routes/qr.routes')(app);
+
+// === Serve Frontend Build ===
+// Hasil build React akan dicopy ke: backend/client
+const clientPath = path.join(__dirname, 'client');
+app.use(express.static(clientPath));
+
+// SPA fallback (HARUS terakhir setelah rute API)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(clientPath, 'index.html'));
+});
+
+// --- Start server ---
+const PORT = process.env.PORT || 3000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server is running on port ${PORT}`);
+});
 
 async function initial() {
     try {
