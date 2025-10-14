@@ -1,74 +1,62 @@
+// Mengimpor modul-modul yang diperlukan
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-require('dotenv').config();
 const path = require('path');
+require('dotenv').config(); // Memuat variabel lingkungan dari file .env
 
+// --- INISIALISASI APLIKASI EXPRESS ---
 const app = express();
+const PORT = process.env.PORT || 5000; // Menggunakan port dari Railway atau default 5000
 
-// === CORS SETUP ===
-const corsOptions = {
-  origin: '*',
-  optionsSuccessStatus: 200,
-};
-app.use(cors(corsOptions));
+// --- MIDDLEWARE ---
+app.use(cors()); // Mengaktifkan Cross-Origin Resource Sharing
+app.use(express.json()); // Mem-parsing body request JSON
+app.use(express.urlencoded({ extended: true })); // Mem-parsing body request URL-encoded
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// --- KONEKSI DATABASE MONGODB ---
+// Gunakan MONGO_URL dari environment variables yang disediakan Railway
+mongoose.connect(process.env.MONGO_URL, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+})
+.then(() => console.log('Koneksi ke MongoDB berhasil.'))
+.catch(err => console.error('Koneksi ke MongoDB gagal:', err));
 
-// === DATABASE CONNECTION ===
-const db = require('./src/models');
-const Role = db.role;
+// --- RUTE API ANDA ---
+// Tempatkan semua rute API Anda di sini.
+// Contoh:
+// const authRoutes = require('./src/routes/authRoutes');
+// const userRoutes = require('./src/routes/userRoutes');
+// app.use('/api/auth', authRoutes);
+// app.use('/api/users', userRoutes);
 
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log('✅ Successfully connected to MongoDB');
-    initial();
-  })
-  .catch((err) => {
-    console.error('❌ MongoDB Connection Error:', err);
-    process.exit();
-  });
-
-// === ROUTES ===
-app.get('/', (req, res) => {
-  res.send('Hello World from Backend!');
+app.get('/api/test', (req, res) => {
+    res.json({ message: 'Hello from backend API!' });
 });
 
-require('./src/routes/auth.routes')(app);
-require('./src/routes/user.routes')(app);
-require('./src/routes/student.routes')(app);
-require('./src/routes/payment.routes')(app);
-require('./src/routes/qr.routes')(app);
 
-// === SERVE FRONTEND (VITE BUILD) ===
+// --- KODE UNTUK MENYAJIKAN FRONTEND SAAT DEPLOYMENT ---
+// Bagian ini akan menyajikan file-file statis dari build React Anda
 if (process.env.NODE_ENV === 'production') {
-  const frontendPath = path.join(__dirname, '../frontend/dist');
-  app.use(express.static(frontendPath));
+  // Menentukan path ke folder build frontend
+  // Berdasarkan script build di package.json Anda, file akan ada di folder 'client'
+  const buildPath = path.resolve(__dirname, 'client');
+  
+  // Sajikan semua file statis (JS, CSS, gambar, dll.) dari folder tersebut
+  app.use(express.static(buildPath));
 
+  // Untuk semua request GET yang tidak cocok dengan rute API di atas,
+  // kirimkan file index.html dari React.
+  // Ini memungkinkan React Router untuk menangani routing di sisi klien.
   app.get('*', (req, res) => {
-    res.sendFile(path.resolve(frontendPath, 'index.html'));
+    res.sendFile(path.resolve(buildPath, 'index.html'));
   });
 }
+// --- AKHIR DARI KODE DEPLOYMENT ---
 
-// === PORT SETUP ===
-const PORT = process.env.PORT || 3000;
+
+// --- MENJALANKAN SERVER ---
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`Server berjalan di port ${PORT}`);
 });
-
-// === INITIAL ROLE SEEDER ===
-async function initial() {
-  try {
-    const count = await Role.estimatedDocumentCount();
-
-    if (count === 0) {
-      await new Role({ name: 'user' }).save();
-      await new Role({ name: 'admin' }).save();
-      console.log("✅ Added default roles: 'user', 'admin'");
-    }
-  } catch (err) {
-    console.error('Error initializing roles:', err);
-  }
-}
