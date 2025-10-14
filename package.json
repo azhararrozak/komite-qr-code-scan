@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "concurrently -n FRONT,BACK -c green,cyan \"npm --prefix frontend run dev\" \"npm --prefix backend run dev\"",
-    "build": "npm --prefix frontend run build && echo 'Backend biasanya tak perlu build (JS murni)';",
+    "build": "cd frontend && npm ci && npm run build",
     "start": "concurrently -n FRONT,BACK -c green,cyan \"npm --prefix frontend run preview\" \"npm --prefix backend run start\""
   },
   "keywords": [],
