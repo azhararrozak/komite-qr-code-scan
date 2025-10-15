@@ -1,5 +1,5 @@
 import {create} from 'zustand'
-import { fetchRecapByClass, getClassSummary, getStudentsByClass, getGlobalStatistics } from "../services/reportService";
+import { getClassSummary, getStudentsByClass, getGlobalStatistics, getAllStudentsWithPaymentInfo } from "../services/reportService";
 
 const useReportStore = create((set, get) => ({
     reportData: [],
@@ -8,10 +8,10 @@ const useReportStore = create((set, get) => ({
     loading: false,
     error: null,
     
-    fetchRecapByClass: async (params) => {
+    getAllStudentsWithPaymentInfo: async (params) => {
         set({ loading: true, error: null });
         try {
-            const data = await fetchRecapByClass(params);
+            const data = await getAllStudentsWithPaymentInfo(params);
             set({ reportData: data, loading: false });
             return data;
         } catch (err) {

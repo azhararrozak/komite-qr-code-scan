@@ -10,7 +10,6 @@ module.exports = function(app) {
     next();
   });
 
-    app.get("/api/reports/student/class", [authJwt.verifyToken], controller.generateRecapByClass);
     app.get("/api/reports/class/summary", [authJwt.verifyToken], controller.getStudentSummaryByClass);
     app.get("/api/reports/class/:className/students", [authJwt.verifyToken], controller.getStudentsByClass);
     app.get("/api/reports/statistics", [authJwt.verifyToken], controller.getGlobalStatistics);

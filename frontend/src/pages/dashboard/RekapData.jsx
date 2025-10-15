@@ -8,7 +8,7 @@ const RekapData = () => {
     globalStats, 
     loading, 
     error, 
-    fetchRecapByClass, 
+    getAllStudentsWithPaymentInfo, 
     getClassSummary, 
     getGlobalStatistics,
     clearError 
@@ -27,7 +27,7 @@ const RekapData = () => {
       await Promise.all([
         getGlobalStatistics(),
         getClassSummary(),
-        fetchRecapByClass({ q: search, status: statusFilter })
+        getAllStudentsWithPaymentInfo({ q: search, status: statusFilter })
       ])
     } catch (err) {
       console.error('Error loading initial data:', err)
@@ -36,7 +36,7 @@ const RekapData = () => {
 
   const handleSearchSubmit = (e) => {
     e.preventDefault()
-    fetchRecapByClass({ q: search, status: statusFilter })
+    getAllStudentsWithPaymentInfo({ q: search, status: statusFilter })
   }
 
   const getStatusBadge = (status) => {
@@ -174,13 +174,13 @@ const RekapData = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {reportData.map((student) => (
-                <tr key={student.id} className="hover:bg-gray-50">
+                <tr key={student._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{student.nis}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">{student.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{student.className}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">{student.class}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">{formatRupiah(student.targetAmount)}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">{formatRupiah(student.paidAmount)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-orange-600">{formatRupiah(student.remaining)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-orange-600">{formatRupiah(student.remainingAmount)}</td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-2 py-1 text-xs rounded-full ${getStatusBadge(student.status)}`}>
                       {student.status}
