@@ -10,6 +10,7 @@ const Register = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [classAssigned, setClassAssigned] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [message, setMessage] = useState("");
@@ -37,6 +38,11 @@ const Register = () => {
     setConfirmPassword(confirmPassword);
   }
 
+  const onChangeClassAssigned = (e) => {
+    const classAssigned = e.target.value;
+    setClassAssigned(classAssigned);
+  }
+
   const handleRegister = (e) => {
     e.preventDefault();
 
@@ -47,7 +53,7 @@ const Register = () => {
       return;
     }
 
-    register(username, email, confirmPassword).then(
+    register(username, email, confirmPassword, classAssigned).then(
       (response) => {
   // server may return a message - show it if present
   setMessage(response?.message || "Registration successful");
@@ -78,6 +84,29 @@ const Register = () => {
           <form className="space-y-6" onSubmit={handleRegister}>
             <FormField id="username" label="Username" value={username} onChange={onChangeUsername} />
             <FormField id="email" label="Email address" type="email" value={email} onChange={onChangeEmail} />
+
+            {/* Class Assigned Dropdown 7A - 7I */}
+            <div>
+              <label htmlFor="classAssigned" className="block text-sm font-medium text-gray-700">Class Assigned</label>
+              <select
+                id="classAssigned"
+                name="classAssigned"
+                value={classAssigned}
+                onChange={onChangeClassAssigned}
+                className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+              >
+                <option value="">Select Class</option>
+                <option value="7A">7A</option>
+                <option value="7B">7B</option>
+                <option value="7C">7C</option>
+                <option value="7D">7D</option>
+                <option value="7E">7E</option>
+                <option value="7F">7F</option>
+                <option value="7G">7G</option>
+                <option value="7H">7H</option>
+                <option value="7I">7I</option>
+              </select>
+            </div>
 
             <div>
               <label htmlFor="password" className="block text-sm font-medium text-gray-700">Password</label>

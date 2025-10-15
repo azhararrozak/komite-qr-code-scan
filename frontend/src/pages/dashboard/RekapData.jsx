@@ -1,31 +1,32 @@
-import { useEffect, useState } from 'react'
-import useReportStore from '../../stores/useReportStore'
-import useAuthStore from '../../stores/useAuthStore'
+import { useEffect, useState } from "react";
+import useReportStore from "../../stores/useReportStore";
+import useAuthStore from "../../stores/useAuthStore";
 
 const RekapData = () => {
-  const { 
-    reportData, 
+  const {
+    reportData,
     classSummary,
     studentsByClass,
-    globalStats, 
-    loading, 
-    error, 
-    getAllStudentsWithPaymentInfo, 
+    globalStats,
+    loading,
+    error,
+    getAllStudentsWithPaymentInfo,
     getStudentsByClass,
-    getClassSummary, 
+    getClassSummary,
     getGlobalStatistics,
-    clearError 
-  } = useReportStore()
+    clearError,
+  } = useReportStore();
 
   const user = useAuthStore((s) => s.user);
-  
-  const [activeTab, setActiveTab] = useState('overview')
-  const [search, setSearch] = useState('')
-  const [statusFilter, setStatusFilter] = useState('')
+  const classAssigned = user?.classAssigned || "";
+
+  const [activeTab, setActiveTab] = useState("overview");
+  const [search, setSearch] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
 
   useEffect(() => {
-    loadInitialData()
-  }, [])
+    loadInitialData();
+  }, []);
 
   const loadInitialData = async () => {
     try {
@@ -33,68 +34,84 @@ const RekapData = () => {
         getGlobalStatistics(),
         getClassSummary(),
         getAllStudentsWithPaymentInfo({ q: search, status: statusFilter }),
-        getStudentsByClass(user.classAssigned, { q: search, status: statusFilter }),
-      ])
+        getStudentsByClass(classAssigned, { q: search, status: statusFilter }),
+      ]);
     } catch (err) {
-      console.error('Error loading initial data:', err)
+      console.error("Error loading initial data:", err);
     }
-  }
+  };
 
   const handleSearchSubmit = (e) => {
-    e.preventDefault()
-    getAllStudentsWithPaymentInfo({ q: search, status: statusFilter })
-  }
+    e.preventDefault();
+    getAllStudentsWithPaymentInfo({ q: search, status: statusFilter });
+  };
 
   const getStatusBadge = (status) => {
     const colors = {
-      'Lunas': 'bg-green-100 text-green-800',
-      'Belum Lunas': 'bg-yellow-100 text-yellow-800',
-      'Belum Dibayar': 'bg-red-100 text-red-800'
-    }
-    return colors[status] || 'bg-gray-100 text-gray-800'
-  }
+      Lunas: "bg-green-100 text-green-800",
+      "Belum Lunas": "bg-yellow-100 text-yellow-800",
+      "Belum Dibayar": "bg-red-100 text-red-800",
+    };
+    return colors[status] || "bg-gray-100 text-gray-800";
+  };
 
   const formatRupiah = (amount) => {
-    return `Rp ${amount?.toLocaleString('id-ID') || '0'}`
-  }
+    return `Rp ${amount?.toLocaleString("id-ID") || "0"}`;
+  };
 
   const renderOverview = () => (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="bg-blue-50 p-6 rounded-lg">
           <h3 className="text-sm font-medium text-blue-600">Total Siswa</h3>
-          <p className="text-2xl font-bold text-blue-900">{globalStats?.totalStudents || 0}</p>
+          <p className="text-2xl font-bold text-blue-900">
+            {globalStats?.totalStudents || 0}
+          </p>
         </div>
         <div className="bg-green-50 p-6 rounded-lg">
-          <h3 className="text-sm font-medium text-green-600">Total Terkumpul</h3>
-          <p className="text-2xl font-bold text-green-900">{formatRupiah(globalStats?.totalPaidAmount)}</p>
+          <h3 className="text-sm font-medium text-green-600">
+            Total Terkumpul
+          </h3>
+          <p className="text-2xl font-bold text-green-900">
+            {formatRupiah(globalStats?.totalPaidAmount)}
+          </p>
         </div>
         <div className="bg-orange-50 p-6 rounded-lg">
           <h3 className="text-sm font-medium text-orange-600">Target Total</h3>
-          <p className="text-2xl font-bold text-orange-900">{formatRupiah(globalStats?.totalTargetAmount)}</p>
+          <p className="text-2xl font-bold text-orange-900">
+            {formatRupiah(globalStats?.totalTargetAmount)}
+          </p>
         </div>
         <div className="bg-purple-50 p-6 rounded-lg">
           <h3 className="text-sm font-medium text-purple-600">Persentase</h3>
-          <p className="text-2xl font-bold text-purple-900">{globalStats?.collectionPercentage || 0}%</p>
+          <p className="text-2xl font-bold text-purple-900">
+            {globalStats?.collectionPercentage || 0}%
+          </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-green-50 p-6 rounded-lg">
           <h3 className="text-sm font-medium text-green-600">Siswa Lunas</h3>
-          <p className="text-3xl font-bold text-green-900">{globalStats?.studentsStatus?.lunas || 0}</p>
+          <p className="text-3xl font-bold text-green-900">
+            {globalStats?.studentsStatus?.lunas || 0}
+          </p>
         </div>
         <div className="bg-yellow-50 p-6 rounded-lg">
           <h3 className="text-sm font-medium text-yellow-600">Belum Lunas</h3>
-          <p className="text-3xl font-bold text-yellow-900">{globalStats?.studentsStatus?.belumLunas || 0}</p>
+          <p className="text-3xl font-bold text-yellow-900">
+            {globalStats?.studentsStatus?.belumLunas || 0}
+          </p>
         </div>
         <div className="bg-red-50 p-6 rounded-lg">
           <h3 className="text-sm font-medium text-red-600">Belum Bayar</h3>
-          <p className="text-3xl font-bold text-red-900">{globalStats?.studentsStatus?.belumDibayar || 0}</p>
+          <p className="text-3xl font-bold text-red-900">
+            {globalStats?.studentsStatus?.belumDibayar || 0}
+          </p>
         </div>
       </div>
     </div>
-  )
+  );
 
   const renderClassSummary = () => (
     <div className="space-y-4">
@@ -102,39 +119,56 @@ const RekapData = () => {
         <div key={cls.className} className="bg-white border rounded-lg p-6">
           <div className="flex justify-between items-start mb-4">
             <h3 className="text-lg font-semibold">{cls.className}</h3>
-            <span className="text-sm text-gray-500">{cls.totalStudents} siswa</span>
+            <span className="text-sm text-gray-500">
+              {cls.totalStudents} siswa
+            </span>
           </div>
-          
+
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
             <div>
               <p className="text-sm text-gray-600">Target</p>
-              <p className="font-semibold">{formatRupiah(cls.totalTargetAmount)}</p>
+              <p className="font-semibold">
+                {formatRupiah(cls.totalTargetAmount)}
+              </p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Terkumpul</p>
-              <p className="font-semibold text-green-600">{formatRupiah(cls.totalPaidAmount)}</p>
+              <p className="font-semibold text-green-600">
+                {formatRupiah(cls.totalPaidAmount)}
+              </p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Sisa</p>
-              <p className="font-semibold text-orange-600">{formatRupiah(cls.totalRemainingAmount)}</p>
+              <p className="font-semibold text-orange-600">
+                {formatRupiah(cls.totalRemainingAmount)}
+              </p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Progress</p>
               <p className="font-semibold text-blue-600">
-                {cls.totalTargetAmount > 0 ? Math.round((cls.totalPaidAmount / cls.totalTargetAmount) * 100) : 0}%
+                {cls.totalTargetAmount > 0
+                  ? Math.round(
+                      (cls.totalPaidAmount / cls.totalTargetAmount) * 100
+                    )
+                  : 0}
+                %
               </p>
             </div>
           </div>
 
           <div className="flex space-x-4 text-sm">
             <span className="text-green-600">Lunas: {cls.paidStudents}</span>
-            <span className="text-yellow-600">Belum Lunas: {cls.partialPaidStudents}</span>
-            <span className="text-red-600">Belum Bayar: {cls.unpaidStudents}</span>
+            <span className="text-yellow-600">
+              Belum Lunas: {cls.partialPaidStudents}
+            </span>
+            <span className="text-red-600">
+              Belum Bayar: {cls.unpaidStudents}
+            </span>
           </div>
         </div>
       ))}
     </div>
-  )
+  );
 
   const renderStudentList = () => (
     <div className="space-y-4">
@@ -194,7 +228,7 @@ const RekapData = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {reportData.map((student) => (
-                <tr key={student.id} className="hover:bg-gray-50">
+                <tr key={student._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     {student.nis}
                   </td>
@@ -290,7 +324,7 @@ const RekapData = () => {
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {studentsByClass.map((student) => (
-                <tr key={student.id} className="hover:bg-gray-50">
+                <tr key={student._id} className="hover:bg-gray-50">
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                     {student.nis}
                   </td>
@@ -327,61 +361,70 @@ const RekapData = () => {
     </div>
   );
 
+  const isAdmin = user?.roles?.includes("ROLE_ADMIN");
+
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-6">Rekap Data Pembayaran</h1>
-      
+
       {error && (
         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
           {error}
-          <button onClick={clearError} className="ml-2 text-red-500 hover:text-red-700">×</button>
+          <button
+            onClick={clearError}
+            className="ml-2 text-red-500 hover:text-red-700"
+          >
+            ×
+          </button>
         </div>
       )}
 
-      <div className="mb-6">
-        <nav className="flex space-x-8">
-          <button
-            onClick={() => setActiveTab('overview')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'overview'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Overview
-          </button>
-          <button
-            onClick={() => setActiveTab('classes')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'classes'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Per Kelas
-          </button>
-          <button
-            onClick={() => setActiveTab('students')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'students'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Detail Siswa
-          </button>
-          <button
-            onClick={() => setActiveTab('studentbyclass')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'studentbyclass'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700'
-            }`}
-          >
-            Siswa per Kelas
-          </button>
-        </nav>
-      </div>
+      {/* Admin: Show tabs navigation */}
+      {isAdmin && (
+        <div className="mb-6">
+          <nav className="flex space-x-8 border-b">
+            <button
+              onClick={() => setActiveTab("overview")}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "overview"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Overview
+            </button>
+            <button
+              onClick={() => setActiveTab("classes")}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "classes"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Per Kelas
+            </button>
+            <button
+              onClick={() => setActiveTab("students")}
+              className={`py-2 px-1 border-b-2 font-medium text-sm ${
+                activeTab === "students"
+                  ? "border-blue-500 text-blue-600"
+                  : "border-transparent text-gray-500 hover:text-gray-700"
+              }`}
+            >
+              Detail Siswa
+            </button>
+          </nav>
+        </div>
+      )}
+
+      {/* Regular User: Show title for their class */}
+      {!isAdmin && (
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-gray-700">
+            Data Siswa Kelas {classAssigned || "Anda"}
+          </h2>
+        </div>
+      )}
 
       {loading ? (
         <div className="text-center py-8">
@@ -390,14 +433,21 @@ const RekapData = () => {
         </div>
       ) : (
         <div>
-          {activeTab === 'overview' && renderOverview()}
-          {activeTab === 'classes' && renderClassSummary()}
-          {activeTab === 'students' && renderStudentList()}
-          {activeTab === 'studentbyclass' && renderStudentsByClass()}
+          {/* Admin: Show content based on active tab */}
+          {isAdmin && (
+            <>
+              {activeTab === "overview" && renderOverview()}
+              {activeTab === "classes" && renderClassSummary()}
+              {activeTab === "students" && renderStudentList()}
+            </>
+          )}
+
+          {/* Regular User: Only show students by class */}
+          {!isAdmin && renderStudentsByClass()}
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default RekapData
+export default RekapData;
