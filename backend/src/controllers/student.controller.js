@@ -340,28 +340,36 @@ exports.getAllStudentsList = async (req, res) => {
     const { page = 1, limit = 50, search, class: className } = req.query;
     const skip = (page - 1) * limit;
 
+    console.log('Request params:', { page, limit, search, className });
+
     let matchQuery = {};
     
-    if (search) {
+    if (search && search.trim()) {
       matchQuery.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { nis: { $regex: search, $options: 'i' } }
+        { name: { $regex: search.trim(), $options: 'i' } },
+        { nis: { $regex: search.trim(), $options: 'i' } }
       ];
     }
     
-    if (className) {
-      matchQuery.class = className;
+    if (className && className.trim()) {
+      matchQuery.class = className.trim();
     }
 
+    console.log('Match query:', matchQuery);
+
     const students = await Student.find(matchQuery)
-      .select('nis name class gender')
+      .select('nis name class gender targetAmount')
       .skip(skip)
       .limit(parseInt(limit))
       .sort({ class: 1, name: 1 })
       .lean();
 
+    console.log('Found students:', students.length);
+
     const totalStudents = await Student.countDocuments(matchQuery);
     const totalPages = Math.ceil(totalStudents / limit);
+
+    console.log('Total students in DB:', totalStudents);
 
     res.json({
       students,
@@ -373,6 +381,7 @@ exports.getAllStudentsList = async (req, res) => {
       }
     });
   } catch (error) {
+    console.error('Error in getAllStudentsList:', error);
     res.status(500).json({ 
       message: "Error fetching students list", 
       error: error.message 

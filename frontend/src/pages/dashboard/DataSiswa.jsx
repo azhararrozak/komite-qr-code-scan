@@ -17,12 +17,14 @@ const DataSiswa = () => {
   }, [search, selectedClass, currentPage])
 
   const loadStudents = () => {
-    getStudentsList({
+    const params = {
       page: currentPage,
       limit: 20,
       search: search.trim(),
-      class: selectedClass
-    })
+      class: selectedClass || ''
+    }
+    console.log('Loading students with params:', params)
+    getStudentsList(params)
   }
 
   const handleSearchChange = (e) => {
@@ -148,9 +150,9 @@ const DataSiswa = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Gender
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Target
-                    </th>
+                    </th> */}
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -175,9 +177,9 @@ const DataSiswa = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {student.gender ? 'Laki-laki' : 'Perempuan'}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           Rp {student.targetAmount?.toLocaleString('id-ID') || '0'}
-                        </td>
+                        </td> */}
                       </tr>
                     ))
                   )}
