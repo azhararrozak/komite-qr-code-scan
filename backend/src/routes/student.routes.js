@@ -21,11 +21,11 @@ module.exports = function (app) {
     [authJwt.verifyToken], 
     controller.getAllStudents
   );
-  // app.get(
-  //   "/api/students/list",
-  //   [authJwt.verifyToken],
-  //   controller.getAllStudentsList
-  // );
+  app.get(
+    "/api/students/list",
+    [authJwt.verifyToken],
+    controller.getAllStudentsList
+  );
   app.get(
     "/api/students/classes",
     [authJwt.verifyToken],
