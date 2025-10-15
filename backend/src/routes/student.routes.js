@@ -16,7 +16,21 @@ module.exports = function (app) {
     controller.createStudent
   );
 
-  app.get("/api/students", [authJwt.verifyToken], controller.getAllStudents);
+  app.get(
+    "/api/students",
+    [authJwt.verifyToken], 
+    controller.getAllStudents
+  );
+  // app.get(
+  //   "/api/students/list",
+  //   [authJwt.verifyToken],
+  //   controller.getAllStudentsList
+  // );
+  app.get(
+    "/api/students/classes",
+    [authJwt.verifyToken],
+    controller.getAvailableClasses
+  );
   app.get(
     "/api/students/:id",
     [authJwt.verifyToken],

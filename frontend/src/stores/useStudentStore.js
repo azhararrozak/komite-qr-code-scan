@@ -1,10 +1,44 @@
 import { create } from "zustand";
-import { createStudentCsv } from "../services/studentService";
+import { createStudentCsv, getStudentsList, getAvailableClasses } from "../services/studentService";
 
-const useStudentStore = create((set) => ({
+const useStudentStore = create((set, get) => ({
     loading: false,
     error: null,
     successMessage: null,
+    students: [],
+    classes: [],
+    pagination: null,
+    
+    getStudentsList: async (params) => {
+        set({ loading: true, error: null });
+        try {
+            const data = await getStudentsList(params);
+            set({ 
+                loading: false, 
+                students: data.students, 
+                pagination: data.pagination,
+                error: null 
+            });
+            return data;
+        } catch (err) {
+            const message = err?.response?.data?.message || err.message;
+            set({ error: message, loading: false });
+            throw err;
+        }
+    },
+
+    getAvailableClasses: async () => {
+        try {
+            const data = await getAvailableClasses();
+            set({ classes: data, error: null });
+            return data;
+        } catch (err) {
+            const message = err?.response?.data?.message || err.message;
+            set({ error: message });
+            throw err;
+        }
+    },
+
     createStudentCsv: async (file) => {
         set({ loading: true, error: null, successMessage: null });
         try {
@@ -19,7 +53,9 @@ const useStudentStore = create((set) => ({
             throw err;
         }
     },
+    
     clearMessages: () => set({ error: null, successMessage: null }),
 }));
 
+export { useStudentStore };
 export default useStudentStore;

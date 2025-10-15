@@ -39,6 +39,7 @@ require('./src/routes/user.routes')(app);
 require('./src/routes/student.routes')(app);
 require('./src/routes/payment.routes')(app);
 require('./src/routes/qr.routes')(app);
+require('./src/routes/report.routes')(app);
 
 app.get('/api/health', (_req, res) => res.json({ ok: true }));
 

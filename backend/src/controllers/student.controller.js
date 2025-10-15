@@ -334,3 +334,76 @@ exports.createStudentsFromCsv = async (req, res) => {
     });
   }
 };
+
+// exports.getAllStudentsList = async (req, res) => {
+//   try {
+//     const { page = 1, limit = 50, search, class: className } = req.query;
+//     const skip = (page - 1) * limit;
+
+//     let matchQuery = {};
+    
+//     if (search) {
+//       matchQuery.$or = [
+//         { name: { $regex: search, $options: 'i' } },
+//         { nis: { $regex: search, $options: 'i' } }
+//       ];
+//     }
+    
+//     if (className) {
+//       matchQuery.class = className;
+//     }
+
+//     const students = await Student.find(matchQuery)
+//       .select('nis name class gender')
+//       .skip(skip)
+//       .limit(parseInt(limit))
+//       .sort({ class: 1, name: 1 })
+//       .lean();
+
+//     const totalStudents = await Student.countDocuments(matchQuery);
+//     const totalPages = Math.ceil(totalStudents / limit);
+
+//     res.json({
+//       students,
+//       pagination: {
+//         total: totalStudents,
+//         page: parseInt(page),
+//         limit: parseInt(limit),
+//         totalPages
+//       }
+//     });
+//   } catch (error) {
+//     res.status(500).json({ 
+//       message: "Error fetching students list", 
+//       error: error.message 
+//     });
+//   }
+// };
+
+exports.getAvailableClasses = async (req, res) => {
+  try {
+    const classesWithCounts = await Student.aggregate([
+      {
+        $group: {
+          _id: "$class",
+          studentCount: { $sum: 1 }
+        }
+      },
+      {
+        $sort: { _id: 1 }
+      }
+    ]);
+
+    const result = classesWithCounts.map(item => ({
+      className: item._id,
+      studentCount: item.studentCount
+    }));
+
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ 
+      message: "Error fetching available classes", 
+      error: error.message 
+    });
+  }
+};

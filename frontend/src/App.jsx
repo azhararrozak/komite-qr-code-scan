@@ -12,6 +12,7 @@ import NotFound from "./pages/NotFound";
 import TambahData from "./pages/dashboard/TambahData";
 import RekapData from "./pages/dashboard/RekapData";
 import TambahSiswa from "./pages/dashboard/TambahSiswa";
+import DataSiswa from "./pages/dashboard/DataSiswa";
 
 function App() {
   return (
@@ -48,6 +49,7 @@ function App() {
         <Route index element={<Dashboard />} />
         <Route path="setting" element={<Setting />} />
         <Route path="rekap-data" element={<RekapData />} />
+        <Route path="data-siswa" element={<DataSiswa />} />
       </Route>
 
       {/* Admin-only route: Tambah Siswa via CSV */}
