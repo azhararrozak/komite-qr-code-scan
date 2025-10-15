@@ -1,86 +1,72 @@
-// Mengimpor modul-modul yang diperlukan
+// --- Modul yang Diperlukan ---
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const path = require('path');
-require('dotenv').config(); // Memuat variabel lingkungan dari file .env
+const path = require('path'); // PENTING: Menambahkan 'path' yang hilang
+require('dotenv').config();
 
-// --- INISIALISASI APLIKASI EXPRESS ---
 const app = express();
-const PORT = process.env.PORT || 8080; // Menggunakan port dari Railway atau default 5000
-const db = require('./src/models');
-const Role = db.role;
 
-// --- MIDDLEWARE ---
-
+// --- Middleware ---
 const corsOptions = {
     origin: '*',
     optionsSuccessStatus: 200
 };
+app.use(cors(corsOptions));
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
-app.use(cors(corsOptions)); // Mengaktifkan Cross-Origin Resource Sharing
-app.use(express.json()); // Mem-parsing body request JSON
-app.use(express.urlencoded({ extended: true })); // Mem-parsing body request URL-encoded
+// --- Koneksi Database & Inisialisasi Role ---
+const db = require('./src/models');
+const Role = db.role;
 
-// --- KONEKSI DATABASE MONGODB ---
-// Gunakan MONGO_URL dari environment variables yang disediakan Railway
+// PERBAIKAN: Menggunakan MONGO_URL dan menghapus opsi yang tidak berlaku
 mongoose
-  .connect(process.env.MONGODB_URI)
+  .connect(process.env.MONGO_URL) 
   .then(() => {
     console.log("Successfully connect to MongoDB.");
-    initial();
+    initial(); // Menjalankan fungsi initial setelah koneksi berhasil
   })
   .catch((err) => {
     console.error("Connection error", err);
     process.exit();
   });
 
-// --- RUTE API ANDA ---
-// Tempatkan semua rute API Anda di sini.
-// Contoh:
-// const authRoutes = require('./src/routes/authRoutes');
-// const userRoutes = require('./src/routes/userRoutes');
-// app.use('/api/auth', authRoutes);
-// app.use('/api/users', userRoutes);
-
+// --- Rute API Anda ---
+// Rute ini harus didefinisikan SEBELUM kode penyajian frontend
 require('./src/routes/auth.routes')(app);
 require('./src/routes/user.routes')(app);
-//require('./src/routes/student.routes')(app);
-//require('./src/routes/payment.routes')(app);
-//require('./src/routes/qr.routes')(app);
+require('./src/routes/student.routes')(app);
+require('./src/routes/payment.routes')(app);
+require('./src/routes/qr.routes')(app);
+
+app.get('/api/health', (_req, res) => res.json({ ok: true }));
 
 
-app.get('/api/test', (req, res) => {
-    res.json({ message: 'Hello from backend API!' });
-});
-
-
-// --- KODE UNTUK MENYAJIKAN FRONTEND SAAT DEPLOYMENT ---
+// --- Kode untuk Menyajikan Frontend (Harus di bagian paling bawah) ---
 // Bagian ini akan menyajikan file-file statis dari build React Anda
 if (process.env.NODE_ENV === 'production') {
-  // Menentukan path ke folder build frontend
-  // Berdasarkan script build di package.json Anda, file akan ada di folder 'client'
-  const buildPath = path.resolve(__dirname, 'client');
+    const buildPath = path.resolve(__dirname, 'client');
+    
+    // Sajikan semua file statis (JS, CSS, gambar, dll.)
+    app.use(express.static(buildPath));
   
-  // Sajikan semua file statis (JS, CSS, gambar, dll.) dari folder tersebut
-  app.use(express.static(buildPath));
-
-  // Untuk semua request GET yang tidak cocok dengan rute API di atas,
-  // kirimkan file index.html dari React.
-  // Ini memungkinkan React Router untuk menangani routing di sisi klien.
-  app.get('*', (req, res) => {
-    res.sendFile(path.resolve(buildPath, 'index.html'));
-  });
+    // Untuk semua request lain, kirimkan index.html dari React
+    // Ini memungkinkan React Router untuk bekerja
+    app.get('*', (req, res) => {
+      res.sendFile(path.resolve(buildPath, 'index.html'));
+    });
 }
-// --- AKHIR DARI KODE DEPLOYMENT ---
 
-
-// --- MENJALANKAN SERVER ---
-app.listen(PORT, () => {
-  console.log(`Server berjalan di port ${PORT}`);
+// --- Menjalankan Server ---
+// PERBAIKAN: Hanya ada satu deklarasi PORT
+const PORT = process.env.PORT || 8000;
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server is running on port ${PORT}`);
 });
 
-//Initial MOngo
+
+// --- Fungsi untuk Inisialisasi Role di Database ---
 async function initial() {
     try {
       const count = await Role.estimatedDocumentCount();
@@ -97,7 +83,7 @@ async function initial() {
         console.log("Added 'user' and 'admin' to roles collection");
       }
     } catch (err) {
-      console.error("Error:", err);
+      console.error("Error during initial role setup:", err);
     }
-  }
+}
 
