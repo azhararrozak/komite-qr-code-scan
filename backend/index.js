@@ -8,20 +8,32 @@ require('dotenv').config(); // Memuat variabel lingkungan dari file .env
 // --- INISIALISASI APLIKASI EXPRESS ---
 const app = express();
 const PORT = process.env.PORT || 8080; // Menggunakan port dari Railway atau default 5000
+const db = require('./src/models');
+const Role = db.role;
 
 // --- MIDDLEWARE ---
-app.use(cors()); // Mengaktifkan Cross-Origin Resource Sharing
+
+const corsOptions = {
+    origin: '*',
+    optionsSuccessStatus: 200
+};
+
+app.use(cors(corsOptions)); // Mengaktifkan Cross-Origin Resource Sharing
 app.use(express.json()); // Mem-parsing body request JSON
 app.use(express.urlencoded({ extended: true })); // Mem-parsing body request URL-encoded
 
 // --- KONEKSI DATABASE MONGODB ---
 // Gunakan MONGO_URL dari environment variables yang disediakan Railway
-mongoose.connect(process.env.MONGO_URL, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('Koneksi ke MongoDB berhasil.'))
-.catch(err => console.error('Koneksi ke MongoDB gagal:', err));
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log("Successfully connect to MongoDB.");
+    initial();
+  })
+  .catch((err) => {
+    console.error("Connection error", err);
+    process.exit();
+  });
 
 // --- RUTE API ANDA ---
 // Tempatkan semua rute API Anda di sini.
@@ -30,6 +42,13 @@ mongoose.connect(process.env.MONGO_URL, {
 // const userRoutes = require('./src/routes/userRoutes');
 // app.use('/api/auth', authRoutes);
 // app.use('/api/users', userRoutes);
+
+require('./src/routes/auth.routes')(app);
+require('./src/routes/user.routes')(app);
+//require('./src/routes/student.routes')(app);
+//require('./src/routes/payment.routes')(app);
+//require('./src/routes/qr.routes')(app);
+
 
 app.get('/api/test', (req, res) => {
     res.json({ message: 'Hello from backend API!' });
@@ -60,3 +79,25 @@ if (process.env.NODE_ENV === 'production') {
 app.listen(PORT, () => {
   console.log(`Server berjalan di port ${PORT}`);
 });
+
+//Initial MOngo
+async function initial() {
+    try {
+      const count = await Role.estimatedDocumentCount();
+  
+      if (count === 0) {
+        await new Role({
+          name: "user",
+        }).save();
+  
+        await new Role({
+          name: "admin",
+        }).save();
+  
+        console.log("Added 'user' and 'admin' to roles collection");
+      }
+    } catch (err) {
+      console.error("Error:", err);
+    }
+  }
+
