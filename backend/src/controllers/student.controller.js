@@ -130,23 +130,58 @@ exports.createStudentsFromCsv = async (req, res) => {
     })
     .on("end", async () => {
       try {
-        const students = results.map((item) => ({
-          nis: item.nis,
-          name: item.name,
-          class: item.class,
-          gender: item.gender,
-        }));
+        // Validate and transform data
+        const students = results
+          .map((item, index) => {
+            // Skip rows with missing required fields
+            if (!item.nis || !item.name || !item.class) {
+              console.warn(
+                `Row ${index + 1} skipped: missing required fields`,
+                item
+              );
+              return null;
+            }
+
+            // Convert gender to boolean: 'L'/'Laki-laki'/true -> true, 'P'/'Perempuan'/false -> false
+            let genderBool;
+            if (typeof item.gender === "string") {
+              const g = item.gender.trim().toUpperCase();
+              genderBool =
+                g === "L" || g === "LAKI-LAKI" || g === "TRUE" || g === "1";
+            } else {
+              genderBool = Boolean(item.gender);
+            }
+
+            return {
+              nis: item.nis.trim(),
+              name: item.name.trim(),
+              class: item.class.trim(),
+              gender: genderBool,
+              targetAmount: item.targetAmount
+                ? parseInt(item.targetAmount, 10)
+                : 400000,
+            };
+          })
+          .filter((item) => item !== null); // remove null entries (skipped rows)
+
+        if (students.length === 0) {
+          return res
+            .status(400)
+            .send({ message: "No valid student data found in CSV file." });
+        }
 
         await Student.insertMany(students);
         res.send({
           message: "Students were created successfully!",
           inserted: students.length,
+          total: results.length,
         });
       } catch (err) {
         console.error("InsertMany error:", err);
-        res
-          .status(500)
-          .send({ message: "Error creating students from CSV file." });
+        res.status(500).send({
+          message: "Error creating students from CSV file.",
+          error: err.message || err.toString(),
+        });
       } finally {
         // remove uploaded file (best-effort)
         fs.unlink(filePath, (unlinkErr) => {
