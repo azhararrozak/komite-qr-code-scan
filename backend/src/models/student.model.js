@@ -20,7 +20,7 @@ const studentSchema = new mongoose.Schema({
     },
     targetAmount:{
         type: Number,
-        required: true,
+        // required: true,
         default: 400000,
     }
 }, { timestamps: true });
