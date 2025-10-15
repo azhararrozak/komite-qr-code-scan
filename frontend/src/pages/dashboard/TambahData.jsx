@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import toast, { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from "react-hot-toast";
 import usePaymentStore from "../../stores/usePaymentStore";
 import useAuthStore from "../../stores/useAuthStore";
 
@@ -52,8 +52,8 @@ const TambahData = () => {
       setError(errorMsg);
       toast.error(errorMsg, {
         duration: 4000,
-        position: 'top-right',
-        icon: '⚠️',
+        position: "top-right",
+        icon: "⚠️",
       });
       setSubmitting(false);
       return;
@@ -69,21 +69,21 @@ const TambahData = () => {
     };
 
     // Show loading toast
-    const loadingToast = toast.loading('Memproses pembayaran...');
+    const loadingToast = toast.loading("Memproses pembayaran...");
 
     try {
       await createPayment(paymentData);
       const successMsg = "Pembayaran berhasil ditambahkan!";
       setSuccessMessage(successMsg);
-      
+
       // Dismiss loading and show success
       toast.dismiss(loadingToast);
       toast.success(successMsg, {
         duration: 4000,
-        position: 'top-right',
-        icon: '✅',
+        position: "top-right",
+        icon: "✅",
       });
-      
+
       //reset form
       e.target.reset();
       //refresh payment info
@@ -95,13 +95,13 @@ const TambahData = () => {
     } catch (err) {
       const errorMsg = err.message || "Gagal menambahkan pembayaran";
       setError(errorMsg);
-      
+
       // Dismiss loading and show error
       toast.dismiss(loadingToast);
       toast.error(errorMsg, {
         duration: 5000,
-        position: 'top-right',
-        icon: '❌',
+        position: "top-right",
+        icon: "❌",
       });
     } finally {
       setSubmitting(false);
@@ -198,54 +198,55 @@ const TambahData = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 py-8 px-4 sm:px-6 lg:px-8">
       {/* Toast Container */}
-      <Toaster 
+      <Toaster
         position="top-right"
         reverseOrder={false}
         toastOptions={{
           // Default options
-          className: '',
+          className: "",
           duration: 4000,
           style: {
-            background: '#fff',
-            color: '#363636',
-            padding: '16px',
-            borderRadius: '8px',
-            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+            background: "#fff",
+            color: "#363636",
+            padding: "16px",
+            borderRadius: "8px",
+            boxShadow:
+              "0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)",
           },
           // Success toast style
           success: {
             duration: 4000,
             style: {
-              background: '#10b981',
-              color: '#fff',
+              background: "#10b981",
+              color: "#fff",
             },
             iconTheme: {
-              primary: '#fff',
-              secondary: '#10b981',
+              primary: "#fff",
+              secondary: "#10b981",
             },
           },
           // Error toast style
           error: {
             duration: 5000,
             style: {
-              background: '#ef4444',
-              color: '#fff',
+              background: "#ef4444",
+              color: "#fff",
             },
             iconTheme: {
-              primary: '#fff',
-              secondary: '#ef4444',
+              primary: "#fff",
+              secondary: "#ef4444",
             },
           },
           // Loading toast style
           loading: {
             style: {
-              background: '#3b82f6',
-              color: '#fff',
+              background: "#3b82f6",
+              color: "#fff",
             },
           },
         }}
       />
-      
+
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-6">
