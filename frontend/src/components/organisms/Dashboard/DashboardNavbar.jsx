@@ -7,8 +7,14 @@ const DashboardNavbar = () => {
         <li>
           <NavLink end to="/dashboard" className={({isActive}) => isActive ? 'block px-4 py-2 bg-gray-200 rounded' : 'block px-4 py-2 hover:bg-gray-50 rounded'}>Profile</NavLink>
         </li>
-        <li>
+        {/* <li>
           <NavLink to="/dashboard/setting" className={({isActive}) => isActive ? 'block px-4 py-2 bg-gray-200 rounded' : 'block px-4 py-2 hover:bg-gray-50 rounded'}>Settings</NavLink>
+        </li> */}
+        <li>
+          <NavLink to="/dashboard/tambah-siswa" className={({isActive}) => isActive ? 'block px-4 py-2 bg-gray-200 rounded' : 'block px-4 py-2 hover:bg-gray-50 rounded'}>Tambah Siswa</NavLink>
+        </li>
+        <li>
+          <NavLink to="/dashboard/rekap-data" className={({isActive}) => isActive ? 'block px-4 py-2 bg-gray-200 rounded' : 'block px-4 py-2 hover:bg-gray-50 rounded'}>Rekap Data</NavLink>
         </li>
       </ul>
     </nav>

@@ -6,13 +6,14 @@ import Dashboard from "./pages/dashboard/Dashboard";
 import DashboardLayout from "./pages/dashboard/DashboardLayout";
 import Setting from "./pages/dashboard/Setting";
 import ProtectedRoute from "./routes/ProtectedRoute";
+import AdminRoute from "./routes/AdminRoute";
 import GuestRoute from "./routes/GuestRoute";
 import NotFound from "./pages/NotFound";
 import TambahData from "./pages/dashboard/TambahData";
 import RekapData from "./pages/dashboard/RekapData";
+import TambahSiswa from "./pages/dashboard/TambahSiswa";
 
 function App() {
-
   return (
     <Routes>
       <Route path="/" element={<Home />} />
@@ -46,7 +47,21 @@ function App() {
       >
         <Route index element={<Dashboard />} />
         <Route path="setting" element={<Setting />} />
+        <Route path="rekap-data" element={<RekapData />} />
       </Route>
+
+      {/* Admin-only route: Tambah Siswa via CSV */}
+      <Route
+        path="/dashboard/tambah-siswa"
+        element={
+          <AdminRoute>
+            <DashboardLayout />
+          </AdminRoute>
+        }
+      >
+        <Route index element={<TambahSiswa />} />
+      </Route>
+
       {/* Reader QR with protected route */}
       <Route
         path="/tambah-data/:nis"
@@ -56,18 +71,10 @@ function App() {
           </ProtectedRoute>
         }
       />
-      <Route
-        path="/rekap-data"
-        element={
-          <ProtectedRoute>
-            <RekapData />
-          </ProtectedRoute>
-        }
-      />
       {/* 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
-  )
+  );
 }
 
-export default App
+export default App;
