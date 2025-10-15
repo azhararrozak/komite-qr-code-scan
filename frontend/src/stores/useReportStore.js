@@ -1,7 +1,7 @@
 import {create} from 'zustand'
 import { getClassSummary, getStudentsByClass, getGlobalStatistics, getAllStudentsWithPaymentInfo } from "../services/reportService";
 
-const useReportStore = create((set, get) => ({
+const useReportStore = create((set) => ({
     reportData: [],
     classSummary: [],
     studentsByClass: [],

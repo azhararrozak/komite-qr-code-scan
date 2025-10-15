@@ -1,7 +1,15 @@
-exports.allAccess = (req, res) => {
-  res.status(200).send("Public Content.");
-}
+const db = require("../models");
+const User = db.user;
 
-exports.adminOnly = (req, res) => {
-  res.status(200).send("Admin Content.");
-}
+//getAlluser with role user
+export const getAllWaliKelas = async (req, res) => {
+  try {
+    const users = await User.find({ roles: { $in: ["ROLE_USER"] } }).select(
+      "-password"
+    );
+    res.status(200).json(users);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+};
+

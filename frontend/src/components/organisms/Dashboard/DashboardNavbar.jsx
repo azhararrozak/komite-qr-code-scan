@@ -31,6 +31,21 @@ const DashboardNavbar = () => {
         {isAdmin && (
           <li>
             <NavLink
+              to="/dashboard/wali-kelas"
+              className={({ isActive }) =>
+                isActive
+                  ? "block px-4 py-2 bg-gray-200 rounded"
+                  : "block px-4 py-2 hover:bg-gray-50 rounded"
+              }
+            >
+              List Wali Kelas
+            </NavLink>
+          </li>
+        )}
+
+        {isAdmin && (
+          <li>
+            <NavLink
               to="/dashboard/tambah-siswa"
               className={({ isActive }) =>
                 isActive

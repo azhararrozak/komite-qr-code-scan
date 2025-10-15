@@ -13,6 +13,7 @@ import TambahData from "./pages/dashboard/TambahData";
 import RekapData from "./pages/dashboard/RekapData";
 import TambahSiswa from "./pages/dashboard/TambahSiswa";
 import DataSiswa from "./pages/dashboard/DataSiswa";
+import WaliKelas from "./pages/dashboard/WaliKelas";
 
 function App() {
   return (
@@ -50,6 +51,7 @@ function App() {
         <Route path="setting" element={<Setting />} />
         <Route path="rekap-data" element={<RekapData />} />
         <Route path="data-siswa" element={<DataSiswa />} />
+        <Route path="wali-kelas" element={<WaliKelas />} />
       </Route>
 
       {/* Admin-only route: Tambah Siswa via CSV */}
