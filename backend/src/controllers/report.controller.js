@@ -15,10 +15,10 @@ exports.getStudentSummaryByClass = async (req, res) => {
               _id: "$_id",
               nis: "$nis",
               name: "$name",
-              targetAmount: "$targetAmount"
-            }
-          }
-        }
+              targetAmount: "$targetAmount",
+            },
+          },
+        },
       },
       {
         $lookup: {
@@ -27,26 +27,26 @@ exports.getStudentSummaryByClass = async (req, res) => {
           pipeline: [
             {
               $match: {
-                $expr: { $in: ["$studentId", "$$studentIds"] }
-              }
+                $expr: { $in: ["$studentId", "$$studentIds"] },
+              },
             },
             {
               $group: {
                 _id: "$studentId",
-                totalPaid: { $sum: "$amount" }
-              }
-            }
+                totalPaid: { $sum: "$amount" },
+              },
+            },
           ],
-          as: "payments"
-        }
+          as: "payments",
+        },
       },
       {
         $addFields: {
           totalPaidAmount: {
-            $sum: "$payments.totalPaid"
+            $sum: "$payments.totalPaid",
           },
           totalRemainingAmount: {
-            $subtract: ["$totalTargetAmount", { $sum: "$payments.totalPaid" }]
+            $subtract: ["$totalTargetAmount", { $sum: "$payments.totalPaid" }],
           },
           studentsWithPayments: {
             $map: {
@@ -65,24 +65,26 @@ exports.getStudentSummaryByClass = async (req, res) => {
                                 input: {
                                   $filter: {
                                     input: "$payments",
-                                    cond: { $eq: ["$$this._id", "$$student._id"] }
-                                  }
+                                    cond: {
+                                      $eq: ["$$this._id", "$$student._id"],
+                                    },
+                                  },
                                 },
-                                in: "$$this.totalPaid"
-                              }
+                                in: "$$this.totalPaid",
+                              },
                             },
-                            0
-                          ]
+                            0,
+                          ],
                         },
-                        0
-                      ]
-                    }
-                  }
-                ]
-              }
-            }
-          }
-        }
+                        0,
+                      ],
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
       },
       {
         $addFields: {
@@ -95,27 +97,35 @@ exports.getStudentSummaryByClass = async (req, res) => {
                   "$$student",
                   {
                     remainingAmount: {
-                      $subtract: ["$$student.targetAmount", "$$student.paidAmount"]
+                      $subtract: [
+                        "$$student.targetAmount",
+                        "$$student.paidAmount",
+                      ],
                     },
                     status: {
                       $cond: {
-                        if: { $gte: ["$$student.paidAmount", "$$student.targetAmount"] },
+                        if: {
+                          $gte: [
+                            "$$student.paidAmount",
+                            "$$student.targetAmount",
+                          ],
+                        },
                         then: "Lunas",
                         else: {
                           $cond: {
                             if: { $gt: ["$$student.paidAmount", 0] },
                             then: "Belum Lunas",
-                            else: "Belum Dibayar"
-                          }
-                        }
-                      }
-                    }
-                  }
-                ]
-              }
-            }
-          }
-        }
+                            else: "Belum Dibayar",
+                          },
+                        },
+                      },
+                    },
+                  },
+                ],
+              },
+            },
+          },
+        },
       },
       {
         $addFields: {
@@ -123,27 +133,27 @@ exports.getStudentSummaryByClass = async (req, res) => {
             $size: {
               $filter: {
                 input: "$studentsWithStatus",
-                cond: { $eq: ["$$this.status", "Lunas"] }
-              }
-            }
+                cond: { $eq: ["$$this.status", "Lunas"] },
+              },
+            },
           },
           partialPaidStudents: {
             $size: {
               $filter: {
                 input: "$studentsWithStatus",
-                cond: { $eq: ["$$this.status", "Belum Lunas"] }
-              }
-            }
+                cond: { $eq: ["$$this.status", "Belum Lunas"] },
+              },
+            },
           },
           unpaidStudents: {
             $size: {
               $filter: {
                 input: "$studentsWithStatus",
-                cond: { $eq: ["$$this.status", "Belum Dibayar"] }
-              }
-            }
-          }
-        }
+                cond: { $eq: ["$$this.status", "Belum Dibayar"] },
+              },
+            },
+          },
+        },
       },
       {
         $project: {
@@ -156,18 +166,23 @@ exports.getStudentSummaryByClass = async (req, res) => {
           partialPaidStudents: 1,
           unpaidStudents: 1,
           students: "$studentsWithStatus",
-          _id: 0
-        }
+          _id: 0,
+        },
       },
       {
-        $sort: { className: 1 }
-      }
+        $sort: { className: 1 },
+      },
     ];
 
     const result = await Student.aggregate(pipeline);
     res.json(result);
   } catch (error) {
-    res.status(500).json({ message: "Error generating class summary", error: error.message });
+    res
+      .status(500)
+      .json({
+        message: "Error generating class summary",
+        error: error.message,
+      });
   }
 };
 
@@ -177,11 +192,11 @@ exports.getStudentsByClass = async (req, res) => {
     const { status, search } = req.query;
 
     let matchQuery = { class: className };
-    
+
     if (search) {
       matchQuery.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { nis: { $regex: search, $options: 'i' } }
+        { name: { $regex: search, $options: "i" } },
+        { nis: { $regex: search, $options: "i" } },
       ];
     }
 
@@ -191,21 +206,25 @@ exports.getStudentsByClass = async (req, res) => {
       return res.json([]);
     }
 
-    const studentIds = students.map(s => s._id);
+    const studentIds = students.map((s) => s._id);
 
     const payments = await Payment.aggregate([
       { $match: { studentId: { $in: studentIds } } },
-      { $group: { _id: "$studentId", totalPaid: { $sum: "$amount" } } }
+      { $group: { _id: "$studentId", totalPaid: { $sum: "$amount" } } },
     ]);
 
     const paymentMap = new Map();
-    payments.forEach(p => paymentMap.set(String(p._id), p.totalPaid));
+    payments.forEach((p) => paymentMap.set(String(p._id), p.totalPaid));
 
-    let studentsWithPayments = students.map(student => {
+    let studentsWithPayments = students.map((student) => {
       const paidAmount = paymentMap.get(String(student._id)) || 0;
       const remainingAmount = Math.max(student.targetAmount - paidAmount, 0);
-      const paymentStatus = paidAmount >= student.targetAmount ? "Lunas" : 
-                           paidAmount > 0 ? "Belum Lunas" : "Belum Dibayar";
+      const paymentStatus =
+        paidAmount >= student.targetAmount
+          ? "Lunas"
+          : paidAmount > 0
+          ? "Belum Lunas"
+          : "Belum Dibayar";
 
       return {
         _id: student._id,
@@ -216,19 +235,21 @@ exports.getStudentsByClass = async (req, res) => {
         targetAmount: student.targetAmount,
         paidAmount,
         remainingAmount,
-        status: paymentStatus
+        status: paymentStatus,
       };
     });
 
     if (status) {
       const statusMap = {
-        'lunas': 'Lunas',
-        'belum_lunas': 'Belum Lunas',
-        'belum_dibayar': 'Belum Dibayar'
+        lunas: "Lunas",
+        belum_lunas: "Belum Lunas",
+        belum_dibayar: "Belum Dibayar",
       };
-      
+
       if (statusMap[status]) {
-        studentsWithPayments = studentsWithPayments.filter(s => s.status === statusMap[status]);
+        studentsWithPayments = studentsWithPayments.filter(
+          (s) => s.status === statusMap[status]
+        );
       }
     }
 
@@ -236,7 +257,12 @@ exports.getStudentsByClass = async (req, res) => {
 
     res.json(studentsWithPayments);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching students by class", error: error.message });
+    res
+      .status(500)
+      .json({
+        message: "Error fetching students by class",
+        error: error.message,
+      });
   }
 };
 
@@ -244,16 +270,16 @@ exports.getGlobalStatistics = async (req, res) => {
   try {
     const totalStudents = await Student.countDocuments();
     const totalTargetAmount = await Student.aggregate([
-      { $group: { _id: null, total: { $sum: "$targetAmount" } } }
+      { $group: { _id: null, total: { $sum: "$targetAmount" } } },
     ]);
 
     const totalPaidAmount = await Payment.aggregate([
-      { $group: { _id: null, total: { $sum: "$amount" } } }
+      { $group: { _id: null, total: { $sum: "$amount" } } },
     ]);
 
     const classCount = await Student.aggregate([
       { $group: { _id: "$class" } },
-      { $count: "totalClasses" }
+      { $count: "totalClasses" },
     ]);
 
     const studentsByStatus = await Student.aggregate([
@@ -262,8 +288,8 @@ exports.getGlobalStatistics = async (req, res) => {
           from: "payments",
           localField: "_id",
           foreignField: "studentId",
-          as: "payments"
-        }
+          as: "payments",
+        },
       },
       {
         $addFields: {
@@ -276,23 +302,23 @@ exports.getGlobalStatistics = async (req, res) => {
                 $cond: {
                   if: { $gt: [{ $sum: "$payments.amount" }, 0] },
                   then: "Belum Lunas",
-                  else: "Belum Dibayar"
-                }
-              }
-            }
-          }
-        }
+                  else: "Belum Dibayar",
+                },
+              },
+            },
+          },
+        },
       },
       {
         $group: {
           _id: "$status",
-          count: { $sum: 1 }
-        }
-      }
+          count: { $sum: 1 },
+        },
+      },
     ]);
 
-    const statusMap = { "Lunas": 0, "Belum Lunas": 0, "Belum Dibayar": 0 };
-    studentsByStatus.forEach(item => {
+    const statusMap = { Lunas: 0, "Belum Lunas": 0, "Belum Dibayar": 0 };
+    studentsByStatus.forEach((item) => {
       statusMap[item._id] = item.count;
     });
 
@@ -301,18 +327,29 @@ exports.getGlobalStatistics = async (req, res) => {
       totalClasses: classCount[0]?.totalClasses || 0,
       totalTargetAmount: totalTargetAmount[0]?.total || 0,
       totalPaidAmount: totalPaidAmount[0]?.total || 0,
-      totalRemainingAmount: (totalTargetAmount[0]?.total || 0) - (totalPaidAmount[0]?.total || 0),
+      totalRemainingAmount:
+        (totalTargetAmount[0]?.total || 0) - (totalPaidAmount[0]?.total || 0),
       studentsStatus: {
         lunas: statusMap["Lunas"],
         belumLunas: statusMap["Belum Lunas"],
-        belumDibayar: statusMap["Belum Dibayar"]
+        belumDibayar: statusMap["Belum Dibayar"],
       },
-      collectionPercentage: totalTargetAmount[0]?.total > 0 ? 
-        ((totalPaidAmount[0]?.total || 0) / totalTargetAmount[0].total * 100).toFixed(2) : 0
+      collectionPercentage:
+        totalTargetAmount[0]?.total > 0
+          ? (
+              ((totalPaidAmount[0]?.total || 0) / totalTargetAmount[0].total) *
+              100
+            ).toFixed(2)
+          : 0,
     };
 
     res.json(result);
   } catch (error) {
-    res.status(500).json({ message: "Error fetching global statistics", error: error.message });
+    res
+      .status(500)
+      .json({
+        message: "Error fetching global statistics",
+        error: error.message,
+      });
   }
 };

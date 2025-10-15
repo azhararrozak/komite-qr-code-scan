@@ -4,6 +4,7 @@ import { getClassSummary, getStudentsByClass, getGlobalStatistics, getAllStudent
 const useReportStore = create((set, get) => ({
     reportData: [],
     classSummary: [],
+    studentsByClass: [],
     globalStats: null,
     loading: false,
     error: null,
@@ -51,7 +52,7 @@ const useReportStore = create((set, get) => ({
         set({ loading: true, error: null });
         try {
             const data = await getStudentsByClass(className, params);
-            set({ loading: false });
+            set({ studentsByClass: data, loading: false });
             return data;
         } catch (err) {
             const message = err?.response?.data?.message || err?.message || err;

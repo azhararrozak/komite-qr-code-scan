@@ -1,18 +1,23 @@
 import { useEffect, useState } from 'react'
 import useReportStore from '../../stores/useReportStore'
+import useAuthStore from '../../stores/useAuthStore'
 
 const RekapData = () => {
   const { 
     reportData, 
-    classSummary, 
+    classSummary,
+    studentsByClass,
     globalStats, 
     loading, 
     error, 
     getAllStudentsWithPaymentInfo, 
+    getStudentsByClass,
     getClassSummary, 
     getGlobalStatistics,
     clearError 
   } = useReportStore()
+
+  const user = useAuthStore((s) => s.user);
   
   const [activeTab, setActiveTab] = useState('overview')
   const [search, setSearch] = useState('')
@@ -27,7 +32,8 @@ const RekapData = () => {
       await Promise.all([
         getGlobalStatistics(),
         getClassSummary(),
-        getAllStudentsWithPaymentInfo({ q: search, status: statusFilter })
+        getAllStudentsWithPaymentInfo({ q: search, status: statusFilter }),
+        getStudentsByClass(user.classAssigned, { q: search, status: statusFilter }),
       ])
     } catch (err) {
       console.error('Error loading initial data:', err)
@@ -146,9 +152,9 @@ const RekapData = () => {
           className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           <option value="">Semua Status</option>
-          <option value="PAID">Lunas</option>
-          <option value="PARTIAL">Belum Lunas</option>
-          <option value="UNPAID">Belum Dibayar</option>
+          <option value="Lunas">Lunas</option>
+          <option value="Belum Lunas">Belum Lunas</option>
+          <option value="Belum Dibayar">Belum Dibayar</option>
         </select>
         <button
           type="submit"
@@ -163,26 +169,56 @@ const RekapData = () => {
           <table className="min-w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">NIS</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nama</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kelas</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Target</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dibayar</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Sisa</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  NIS
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Nama
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Kelas
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Target
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Dibayar
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Sisa
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Status
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {reportData.map((student) => (
-                <tr key={student._id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">{student.nis}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{student.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{student.class}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">{formatRupiah(student.targetAmount)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">{formatRupiah(student.paidAmount)}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-orange-600">{formatRupiah(student.remainingAmount)}</td>
+                <tr key={student.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    {student.nis}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {student.name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {student.className}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {formatRupiah(student.targetAmount)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">
+                    {formatRupiah(student.paidAmount)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-orange-600">
+                    {formatRupiah(student.remaining)}
+                  </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs rounded-full ${getStatusBadge(student.status)}`}>
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full ${getStatusBadge(
+                        student.status
+                      )}`}
+                    >
                       {student.status}
                     </span>
                   </td>
@@ -193,7 +229,103 @@ const RekapData = () => {
         </div>
       </div>
     </div>
-  )
+  );
+
+  const renderStudentsByClass = () => (
+    <div className="space-y-4">
+      <form onSubmit={handleSearchSubmit} className="flex gap-4 mb-6">
+        <input
+          type="text"
+          placeholder="Cari siswa..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        />
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+        >
+          <option value="">Semua Status</option>
+          <option value="Lunas">Lunas</option>
+          <option value="Belum Lunas">Belum Lunas</option>
+          <option value="Belum Dibayar">Belum Dibayar</option>
+        </select>
+        <button
+          type="submit"
+          className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+        >
+          Cari
+        </button>
+      </form>
+
+      {/* Similar table structure as renderStudentList */}
+      <div className="bg-white rounded-lg shadow overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="min-w-full">
+            <thead className="bg-gray-50">
+              <tr>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  NIS
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Nama
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Kelas
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Target
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Dibayar
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Sisa
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                  Status
+                </th>
+              </tr>
+            </thead>
+            <tbody className="bg-white divide-y divide-gray-200">
+              {studentsByClass.map((student) => (
+                <tr key={student.id} className="hover:bg-gray-50">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    {student.nis}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {student.name}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {student.className}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm">
+                    {formatRupiah(student.targetAmount)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">
+                    {formatRupiah(student.paidAmount)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-orange-600">
+                    {formatRupiah(student.remaining)}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <span
+                      className={`px-2 py-1 text-xs rounded-full ${getStatusBadge(
+                        student.status
+                      )}`}
+                    >
+                      {student.status}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <div className="p-6">
@@ -238,6 +370,16 @@ const RekapData = () => {
           >
             Detail Siswa
           </button>
+          <button
+            onClick={() => setActiveTab('studentbyclass')}
+            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'studentbyclass'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            Siswa per Kelas
+          </button>
         </nav>
       </div>
 
@@ -251,6 +393,7 @@ const RekapData = () => {
           {activeTab === 'overview' && renderOverview()}
           {activeTab === 'classes' && renderClassSummary()}
           {activeTab === 'students' && renderStudentList()}
+          {activeTab === 'studentbyclass' && renderStudentsByClass()}
         </div>
       )}
     </div>

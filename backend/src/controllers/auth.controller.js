@@ -13,6 +13,7 @@ exports.signup = async (req, res) => {
       username: req.body.username,
       email: req.body.email,
       password: bcrypt.hashSync(req.body.password, 8),
+      classAssigned: req.body.classAssigned || "",
     });
 
     // Save the user to the database
@@ -78,6 +79,7 @@ exports.signin = async (req, res) => {
       roles: authorities,
       accessToken: token,
       refreshToken: refreshToken,
+      classAssigned: user.classAssigned,
     });
 
     //   const token = jwt.sign({ id: user.id }, process.env.JWT_SECRET, {
