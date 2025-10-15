@@ -122,7 +122,7 @@ exports.createStudentsFromCsv = async (req, res) => {
 
   const reader = fs
     .createReadStream(filePath)
-    .pipe(csv())
+    .pipe(csv({ separator: ";" })) // Use semicolon as delimiter
     .on("data", (data) => results.push(data))
     .on("error", (err) => {
       console.error("CSV read error:", err);
@@ -133,8 +133,13 @@ exports.createStudentsFromCsv = async (req, res) => {
         // Validate and transform data
         const students = results
           .map((item, index) => {
+            // Map 'nama' to 'name' if needed (support both column names)
+            const name = item.name || item.nama;
+            const nis = item.nis;
+            const classValue = item.class || item.kelas;
+
             // Skip rows with missing required fields
-            if (!item.nis || !item.name || !item.class) {
+            if (!nis || !name || !classValue) {
               console.warn(
                 `Row ${index + 1} skipped: missing required fields`,
                 item
@@ -153,9 +158,9 @@ exports.createStudentsFromCsv = async (req, res) => {
             }
 
             return {
-              nis: item.nis.trim(),
-              name: item.name.trim(),
-              class: item.class.trim(),
+              nis: nis.trim(),
+              name: name.trim(),
+              class: classValue.trim(),
               gender: genderBool,
               targetAmount: item.targetAmount
                 ? parseInt(item.targetAmount, 10)
