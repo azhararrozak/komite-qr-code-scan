@@ -2,7 +2,7 @@ import axios from 'axios'
 import useAuthStore from '../stores/useAuthStore'
 
 const api = axios.create({
-  baseURL: "http://localhost:8080/api",
+  baseURL: "https://komite-qr-code-scan-production.up.railway.app/api",
 });
 
 // Request interceptor: attach token from zustand store
@@ -38,7 +38,7 @@ api.interceptors.response.use(
 
     try {
       // attempt to refresh token
-      const refreshRes = await axios.post('http://localhost:8080/api/auth/refreshtoken', {
+      const refreshRes = await axios.post('https://komite-qr-code-scan-production.up.railway.app/api/auth/refreshtoken', {
         // backend may require refresh token in body or cookie — try sending stored refreshToken
         refreshToken: useAuthStore.getState().user?.refreshToken,
       })
