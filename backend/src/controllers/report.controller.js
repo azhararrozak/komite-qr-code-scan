@@ -96,6 +96,7 @@ exports.getStudentSummaryByClass = async (req, res) => {
                 $mergeObjects: [
                   "$$student",
                   {
+                    class: "$_id",
                     remainingAmount: {
                       $subtract: [
                         "$$student.targetAmount",

@@ -41,8 +41,8 @@ export async function getAllStudentsWithPaymentInfo(params) {
         
         let filteredStudents = allStudents;
         
-        if (params?.search) {
-            const searchTerm = params.search.toLowerCase();
+        if (params?.q) {
+            const searchTerm = params.q.toLowerCase();
             filteredStudents = allStudents.filter(student => 
                 student.name.toLowerCase().includes(searchTerm) ||
                 student.nis.toLowerCase().includes(searchTerm)

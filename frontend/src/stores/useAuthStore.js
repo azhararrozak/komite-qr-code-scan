@@ -2,7 +2,7 @@ import { create } from "zustand";
 import axios from "axios";
 import api from "../services/api";
 
-const API_URL = "https://komite-qr-code-scan-production.up.railway.app/api/auth/";
+const API_URL = "http://localhost:8080/api/auth/";
 
 const useAuthStore = create((set, get) => ({
   user: JSON.parse(localStorage.getItem("user")) || null,

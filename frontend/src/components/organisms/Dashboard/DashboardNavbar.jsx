@@ -74,14 +74,14 @@ const DashboardNavbar = () => {
 
         <li>
           <NavLink
-            to="/dashboard/rekap-data"
+            to={isAdmin ? "/dashboard/rekap-data-admin" : "/dashboard/rekap-data"}
             className={({ isActive }) =>
               isActive
                 ? "block px-4 py-2 bg-gray-200 rounded"
                 : "block px-4 py-2 hover:bg-gray-50 rounded"
             }
           >
-            Rekap Data
+            {isAdmin ? "Rekap Data Pembayaran" : "Rekap Data Kelas"}
           </NavLink>
         </li>
       </ul>

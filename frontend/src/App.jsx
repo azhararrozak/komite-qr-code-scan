@@ -10,7 +10,8 @@ import AdminRoute from "./routes/AdminRoute";
 import GuestRoute from "./routes/GuestRoute";
 import NotFound from "./pages/NotFound";
 import TambahData from "./pages/dashboard/TambahData";
-import RekapData from "./pages/dashboard/RekapData";
+import RekapDataAdmin from "./pages/dashboard/RekapDataAdmin";
+import RekapDataWaliKelas from "./pages/dashboard/RekapDataWaliKelas";
 import TambahSiswa from "./pages/dashboard/TambahSiswa";
 import DataSiswa from "./pages/dashboard/DataSiswa";
 import WaliKelas from "./pages/dashboard/WaliKelas";
@@ -49,7 +50,12 @@ function App() {
       >
         <Route index element={<Dashboard />} />
         <Route path="setting" element={<Setting />} />
-        <Route path="rekap-data" element={<RekapData />} />
+        <Route path="rekap-data-admin" element={
+          <AdminRoute>
+            <RekapDataAdmin />
+          </AdminRoute>
+        } />
+        <Route path="rekap-data" element={<RekapDataWaliKelas />} />
         <Route path="data-siswa" element={<DataSiswa />} />
         <Route path="wali-kelas" element={<WaliKelas />} />
       </Route>

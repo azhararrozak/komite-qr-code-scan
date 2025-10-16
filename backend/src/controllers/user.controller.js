@@ -1,8 +1,7 @@
 const db = require("../models");
 const User = db.user;
 
-//getAlluser with role user
-export const getAllWaliKelas = async (req, res) => {
+exports.getAllWaliKelas = async (req, res) => {
   try {
     const users = await User.find({ roles: { $in: ["ROLE_USER"] } }).select(
       "-password"
