@@ -30,7 +30,7 @@ const DashboardNavbar = () => {
         {/* Scan QR Code */}
         <li>
           <NavLink
-            to="/dashboard/scan-qr"
+            to="/qr-scan"
             className={({ isActive }) =>
               isActive
                 ? "block px-4 py-2 bg-gray-200 rounded"

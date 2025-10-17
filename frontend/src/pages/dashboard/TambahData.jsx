@@ -79,19 +79,15 @@ const TambahData = () => {
       // Dismiss loading and show success
       toast.dismiss(loadingToast);
       toast.success(successMsg, {
-        duration: 4000,
+        duration: 3000,
         position: "top-right",
         icon: "✅",
       });
 
-      //reset form
-      e.target.reset();
-      //refresh payment info
-      const updatedData = await fetchPaymentInfo(nis);
-      setPaymentInfo(updatedData);
-
-      // Auto-hide success message after 3 seconds
-      setTimeout(() => setSuccessMessage(""), 3000);
+      // Redirect to dashboard after 1.5 seconds
+      setTimeout(() => {
+        navigate("/dashboard");
+      }, 1500);
     } catch (err) {
       const errorMsg = err.message || "Gagal menambahkan pembayaran";
       setError(errorMsg);
