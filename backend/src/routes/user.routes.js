@@ -10,6 +10,9 @@ module.exports = function(app) {
     next();
   });
 
+  app.post("/api/users/walikelas", [authJwt.verifyToken, authJwt.isAdmin], controller.createUserWaliKelas);
+  app.put("/api/users/walikelas/:id", [authJwt.verifyToken, authJwt.isAdmin], controller.editUserWaliKelas);
+  app.delete("/api/users/walikelas/:id", [authJwt.verifyToken, authJwt.isAdmin], controller.deleteUserWaliKelas);
   app.get("/api/users/walikelas", [authJwt.verifyToken, authJwt.isAdmin], controller.getAllWaliKelas);
    
 };
