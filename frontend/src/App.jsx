@@ -1,21 +1,22 @@
 import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home";
 import Login from "./pages/Login";
-import Dashboard from "./pages/dashboard/Dashboard";
+import Dashboard from "./pages/dashboard/profile/Dashboard";
 import DashboardLayout from "./pages/dashboard/DashboardLayout";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
 import GuestRoute from "./routes/GuestRoute";
 import NotFound from "./pages/NotFound";
 import TambahData from "./pages/dashboard/TambahData";
-import RekapDataAdmin from "./pages/dashboard/RekapDataAdmin";
-import RekapDataWaliKelas from "./pages/dashboard/RekapDataWaliKelas";
+import RekapDataAdmin from "./pages/dashboard/rekapdata/RekapDataAdmin";
+import RekapDataWaliKelas from "./pages/dashboard/rekapdata/RekapDataWaliKelas";
 import TambahSiswa from "./pages/dashboard/TambahSiswa";
 import DataSiswa from "./pages/dashboard/DataSiswa";
 import WaliKelas from "./pages/dashboard/walikelas/WaliKelas";
 import WaliKelasLayout from "./pages/dashboard/walikelas/WaliKelasLayout";
 import TambahWaliKelas from "./pages/dashboard/walikelas/TambahWaliKelas";
 import ScanQr from "./pages/dashboard/ScanQr";
+import EditWaliKelas from "./pages/dashboard/walikelas/EditWaliKelas";
 
 function App() {
   return (
@@ -52,9 +53,17 @@ function App() {
         />
         <Route path="rekap-data" element={<RekapDataWaliKelas />} />
         <Route path="data-siswa" element={<DataSiswa />} />
-        <Route path="wali-kelas" element={<WaliKelasLayout />}>
+        <Route
+          path="wali-kelas"
+          element={
+            <AdminRoute>
+              <WaliKelasLayout />
+            </AdminRoute>
+          }
+        >
           <Route index element={<WaliKelas />} />
           <Route path="tambah" element={<TambahWaliKelas />} />
+          <Route path="edit/:id" element={<EditWaliKelas />} />
         </Route>
       </Route>
 

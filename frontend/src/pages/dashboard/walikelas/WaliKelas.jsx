@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import toast, { Toaster } from "react-hot-toast";
 import useUserStore from "../../../stores/useUserStore";
+import { deleteWaliKelas } from "../../../services/userService";
 
 const WaliKelas = () => {
   const navigate = useNavigate();
   const { waliKelas, fetchWaliKelas } = useUserStore();
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -23,6 +26,44 @@ const WaliKelas = () => {
   // Ensure waliKelas is always an array
   const waliKelasList = Array.isArray(waliKelas) ? waliKelas : [];
 
+  const handleEdit = (id) => {
+    navigate(`/dashboard/wali-kelas/edit/${id}`);
+  };
+
+  const handleDelete = async (id, username) => {
+    const confirm = window.confirm(
+      `Apakah Anda yakin ingin menghapus wali kelas "${username}"?`
+    );
+
+    if (!confirm) return;
+
+    setDeletingId(id);
+    const loadingToast = toast.loading("Menghapus wali kelas...");
+
+    try {
+      await deleteWaliKelas(id);
+      toast.dismiss(loadingToast);
+      toast.success("Wali Kelas berhasil dihapus!", {
+        duration: 3000,
+        position: "top-right",
+      });
+
+      // Refresh data
+      await fetchWaliKelas();
+    } catch (error) {
+      toast.dismiss(loadingToast);
+      toast.error(
+        error.response?.data?.message || "Gagal menghapus wali kelas",
+        {
+          duration: 5000,
+          position: "top-right",
+        }
+      );
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="text-center py-8">
@@ -34,6 +75,7 @@ const WaliKelas = () => {
 
   return (
     <div className="p-6">
+      <Toaster position="top-right" />
       {/* Header */}
       <div className="flex justify-between items-center mb-6">
         <div>
@@ -91,13 +133,16 @@ const WaliKelas = () => {
                 <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  Aksi
+                </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
               {waliKelasList.length === 0 ? (
                 <tr>
                   <td
-                    colSpan="5"
+                    colSpan="6"
                     className="px-6 py-8 text-center text-sm text-gray-500"
                   >
                     <div className="flex flex-col items-center">
@@ -170,6 +215,72 @@ const WaliKelas = () => {
                         </svg>
                         Aktif
                       </span>
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                      <div className="flex items-center space-x-3">
+                        <button
+                          onClick={() => handleEdit(wali._id)}
+                          className="text-indigo-600 hover:text-indigo-900 transition-colors"
+                          title="Edit"
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                            />
+                          </svg>
+                        </button>
+                        <button
+                          onClick={() => handleDelete(wali._id, wali.username)}
+                          disabled={deletingId === wali._id}
+                          className="text-red-600 hover:text-red-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                          title="Hapus"
+                        >
+                          {deletingId === wali._id ? (
+                            <svg
+                              className="animate-spin h-5 w-5"
+                              xmlns="http://www.w3.org/2000/svg"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                            >
+                              <circle
+                                className="opacity-25"
+                                cx="12"
+                                cy="12"
+                                r="10"
+                                stroke="currentColor"
+                                strokeWidth="4"
+                              ></circle>
+                              <path
+                                className="opacity-75"
+                                fill="currentColor"
+                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                              ></path>
+                            </svg>
+                          ) : (
+                            <svg
+                              className="w-5 h-5"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                              />
+                            </svg>
+                          )}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))

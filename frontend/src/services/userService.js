@@ -20,4 +20,24 @@ export async function createWaliKelas(data) {
   }
 }
 
-export default { getAllWaliKelas, createWaliKelas };
+export async function editWaliKelas(id, data) {
+  try {
+    const res = await api.put(`/users/walikelas/${id}`, data);
+    return res.data;
+  } catch (error) {
+    console.error("Error editing wali kelas:", error);
+    throw error;
+  }
+}
+
+export async function deleteWaliKelas(id) {
+  try {
+    const res = await api.delete(`/users/walikelas/${id}`);
+    return res.data;
+  } catch (error) {
+    console.error("Error deleting wali kelas:", error);
+    throw error;
+  }
+}
+
+export default { getAllWaliKelas, createWaliKelas, editWaliKelas, deleteWaliKelas };

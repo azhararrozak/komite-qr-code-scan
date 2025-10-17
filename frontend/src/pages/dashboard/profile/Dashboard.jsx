@@ -1,5 +1,5 @@
 import { useLocation } from "react-router-dom";
-import useAuthStore from "../../stores/useAuthStore";
+import useAuthStore from "../../../stores/useAuthStore";
 
 const Dashboard = () => {
   const user = useAuthStore((s) => s.user);
