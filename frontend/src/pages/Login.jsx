@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate, Link, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import useAuthStore from "../stores/useAuthStore";
 import FormField from "../components/molecules/FormField";
 import Button from "../components/atoms/Button";
@@ -122,17 +122,6 @@ const Login = () => {
           {message && (
             <div className="mt-4 text-sm text-red-600 text-center">{message}</div>
           )}
-          <div className="mt-4 text-center">
-            <p className="text-sm text-gray-600">
-              Dont have an account?{" "}
-              <Link
-                to="/auth/register"
-                className="text-indigo-600 hover:text-indigo-500"
-              >
-                Register here
-              </Link>
-            </p>
-          </div>
         </div>
       </div>
     </div>

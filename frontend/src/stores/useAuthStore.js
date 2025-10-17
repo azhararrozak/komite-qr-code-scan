@@ -35,24 +35,6 @@ const useAuthStore = create((set, get) => ({
     }
   },
 
-  register: async (username, email, password, classAssigned) => {
-    set({ loading: true, error: null });
-    try {
-      const res = await axios.post(API_URL + "signup", {
-        username,
-        email,
-        password,
-        classAssigned
-      });
-      set({ loading: false });
-      return res.data;
-    } catch (err) {
-      const message = err?.response?.data?.message || err.message;
-      set({ error: message, loading: false });
-      throw err;
-    }
-  },
-
   fetchProfile: async () => {
     set({ loading: true, error: null });
     try {

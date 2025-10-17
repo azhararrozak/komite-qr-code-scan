@@ -62,12 +62,6 @@ const Dashboard = () => {
                 "No roles"
               )}
             </div>
-            <div>
-              <span className="font-medium">Access Token:</span>{" "}
-              <code className="break-all text-xs bg-gray-100 p-1 rounded">
-                {user.accessToken}
-              </code>
-            </div>
           </div>
         ) : (
           <div>User not found.</div>
