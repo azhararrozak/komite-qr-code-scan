@@ -27,6 +27,20 @@ const DashboardNavbar = () => {
           <NavLink to="/dashboard/setting" className={({isActive}) => isActive ? 'block px-4 py-2 bg-gray-200 rounded' : 'block px-4 py-2 hover:bg-gray-50 rounded'}>Settings</NavLink>
         </li> */}
 
+        {/* Scan QR Code */}
+        <li>
+          <NavLink
+            to="/dashboard/scan-qr"
+            className={({ isActive }) =>
+              isActive
+                ? "block px-4 py-2 bg-gray-200 rounded"
+                : "block px-4 py-2 hover:bg-gray-50 rounded"
+            }
+          >
+            Scan QR Code
+          </NavLink>
+        </li>
+
         {/* Only show Tambah Siswa for Admin */}
         {isAdmin && (
           <li>
