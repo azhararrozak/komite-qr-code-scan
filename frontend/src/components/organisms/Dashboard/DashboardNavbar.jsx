@@ -1,19 +1,28 @@
+/* eslint-disable react/prop-types */
 import { NavLink } from "react-router-dom";
 import useAuthStore from "../../../stores/useAuthStore";
 
-const DashboardNavbar = () => {
+const DashboardNavbar = ({ closeSidebar }) => {
   const user = useAuthStore((state) => state.user);
 
   // Check if user is admin
   const isAdmin = user?.roles?.includes("ROLE_ADMIN");
 
+  // Handle navigation click - close sidebar on mobile
+  const handleNavClick = () => {
+    if (closeSidebar) {
+      closeSidebar();
+    }
+  };
+
   return (
-    <nav className="p-4">
+    <nav className="p-4 overflow-y-auto h-full">
       <ul className="space-y-2">
         <li>
           <NavLink
             end
             to="/dashboard"
+            onClick={handleNavClick}
             className={({ isActive }) =>
               isActive
                 ? "block px-4 py-2 bg-gray-200 rounded"
@@ -31,6 +40,7 @@ const DashboardNavbar = () => {
         <li>
           <NavLink
             to="/qr-scan"
+            onClick={handleNavClick}
             className={({ isActive }) =>
               isActive
                 ? "block px-4 py-2 bg-gray-200 rounded"
@@ -46,6 +56,7 @@ const DashboardNavbar = () => {
           <li>
             <NavLink
               to="/dashboard/wali-kelas"
+              onClick={handleNavClick}
               className={({ isActive }) =>
                 isActive
                   ? "block px-4 py-2 bg-gray-200 rounded"
@@ -61,6 +72,7 @@ const DashboardNavbar = () => {
           <li>
             <NavLink
               to="/dashboard/tambah-siswa"
+              onClick={handleNavClick}
               className={({ isActive }) =>
                 isActive
                   ? "block px-4 py-2 bg-gray-200 rounded"
@@ -75,6 +87,7 @@ const DashboardNavbar = () => {
           <li>
             <NavLink
               to="/dashboard/data-siswa"
+              onClick={handleNavClick}
               className={({ isActive }) =>
                 isActive
                   ? "block px-4 py-2 bg-gray-200 rounded"
@@ -88,7 +101,10 @@ const DashboardNavbar = () => {
 
         <li>
           <NavLink
-            to={isAdmin ? "/dashboard/rekap-data-admin" : "/dashboard/rekap-data"}
+            to={
+              isAdmin ? "/dashboard/rekap-data-admin" : "/dashboard/rekap-data"
+            }
+            onClick={handleNavClick}
             className={({ isActive }) =>
               isActive
                 ? "block px-4 py-2 bg-gray-200 rounded"

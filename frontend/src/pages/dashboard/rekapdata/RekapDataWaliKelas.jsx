@@ -34,7 +34,15 @@ const RekapDataWaliKelas = () => {
         search,
         status: statusFilter,
       });
-      calculateStats(data);
+
+      // Sort data by name alphabetically (A-Z)
+      const sortedData = [...data].sort((a, b) => {
+        const nameA = a.name?.toLowerCase() || "";
+        const nameB = b.name?.toLowerCase() || "";
+        return nameA.localeCompare(nameB);
+      });
+
+      calculateStats(sortedData);
     } catch (err) {
       console.error("Error loading class data:", err);
     }
@@ -91,6 +99,13 @@ const RekapDataWaliKelas = () => {
       ? Math.round((classStats.totalPaid / classStats.totalTarget) * 100)
       : 0;
   };
+
+  // Sort students by name alphabetically
+  const sortedStudents = [...studentsByClass].sort((a, b) => {
+    const nameA = a.name?.toLowerCase() || "";
+    const nameB = b.name?.toLowerCase() || "";
+    return nameA.localeCompare(nameB, "id");
+  });
 
   if (!classAssigned) {
     return (
@@ -198,7 +213,12 @@ const RekapDataWaliKelas = () => {
       {/* Button Export to Excel */}
       <div className="mb-4">
         <button
-          onClick={() => handleExportToExcelRekapDataSiswa(studentsByClass, `Rekap_Data_Kelas_${classAssigned}`)}
+          onClick={() =>
+            handleExportToExcelRekapDataSiswa(
+              sortedStudents,
+              `Rekap_Data_Kelas_${classAssigned}`
+            )
+          }
           className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
         >
           Export to Excel
@@ -240,7 +260,7 @@ const RekapDataWaliKelas = () => {
                 </tr>
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
-                {studentsByClass.length === 0 ? (
+                {sortedStudents.length === 0 ? (
                   <tr>
                     <td
                       colSpan="7"
@@ -250,7 +270,7 @@ const RekapDataWaliKelas = () => {
                     </td>
                   </tr>
                 ) : (
-                  studentsByClass.map((student) => (
+                  sortedStudents.map((student) => (
                     <tr key={student._id} className="hover:bg-gray-50">
                       <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         {student.nis}
