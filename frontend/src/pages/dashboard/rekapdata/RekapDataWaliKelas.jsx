@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import useReportStore from "../../../stores/useReportStore";
 import useAuthStore from "../../../stores/useAuthStore";
+import handleExportToExcelRekapDataSiswa from "../../../utils/ExportToExcel";
 
 const RekapDataWaliKelas = () => {
   const { studentsByClass, loading, error, getStudentsByClass, clearError } =
@@ -193,6 +194,16 @@ const RekapDataWaliKelas = () => {
           Cari
         </button>
       </form>
+
+      {/* Button Export to Excel */}
+      <div className="mb-4">
+        <button
+          onClick={() => handleExportToExcelRekapDataSiswa(studentsByClass, `Rekap_Data_Kelas_${classAssigned}`)}
+          className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+        >
+          Export to Excel
+        </button>
+      </div>
 
       {loading ? (
         <div className="text-center py-8">
