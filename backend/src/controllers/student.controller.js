@@ -1,5 +1,9 @@
 const db = require("../models");
 const Student = db.student;
+const QRCode = require('qrcode');
+const csv = require('csv-parser');
+const fs = require('fs');
+const path = require('path');
 
 // Create and Save a new Student
 exports.createStudent = async (req, res) => {
@@ -413,6 +417,299 @@ exports.getAvailableClasses = async (req, res) => {
     res.status(500).json({ 
       message: "Error fetching available classes", 
       error: error.message 
+    });
+  }
+};
+
+// Generate Students and QR Codes from CSV data
+exports.createStudentsFromCSVWithQR = async (req, res) => {
+  try {
+    // Check if file was uploaded
+    if (!req.file) {
+      return res.status(400).send({ message: "No CSV file uploaded" });
+    }
+
+    const csvFilePath = req.file.path;
+    const csvData = [];
+    const createdStudents = [];
+    const qrCodes = [];
+    const qrCodesDir = path.join(__dirname, '../../qr-codes');
+    
+    // Ensure QR codes directory exists
+    if (!fs.existsSync(qrCodesDir)) {
+      fs.mkdirSync(qrCodesDir, { recursive: true });
+    }
+    
+    // Parse CSV file
+    fs.createReadStream(csvFilePath)
+      .pipe(csv({ separator: ';' }))
+      .on('data', (data) => {
+        // Convert CSV row to expected format
+        const studentData = {
+          nis: data.NIS,
+          name: data.NAME,
+          class: data.CLASS,
+          gender: data.JK === 'L' // true for Laki-laki (L), false for Perempuan (P)
+        };
+        csvData.push(studentData);
+      })
+      .on('end', async () => {
+        try {
+          // Create students in database and generate QR codes
+          for (const studentData of csvData) {
+            // Check if student already exists
+            const existingStudent = await Student.findOne({ nis: studentData.nis });
+            let student;
+
+            if (existingStudent) {
+              // Update existing student
+              student = await Student.findOneAndUpdate(
+                { nis: studentData.nis },
+                studentData,
+                { new: true }
+              );
+            } else {
+              // Create new student
+              const newStudent = new Student(studentData);
+              student = await newStudent.save();
+            }
+
+            createdStudents.push(student);
+
+            // Create JSON data for QR code
+            const qrData = {
+              nis: student.nis,
+              name: student.name,
+              // class: student.class,
+              gender: student.gender?"Laki-laki":"Perempuan",
+              // timestamp: new Date().toISOString()
+            };
+
+            // Create class directory if it doesn't exist
+            const classDir = path.join(qrCodesDir, student.class);
+            if (!fs.existsSync(classDir)) {
+              fs.mkdirSync(classDir, { recursive: true });
+            }
+
+            // Generate QR code as PNG buffer
+            const qrCodeBuffer = await QRCode.toBuffer(JSON.stringify(qrData), {
+              errorCorrectionLevel: 'M',
+              type: 'png',
+              quality: 0.92,
+              margin: 1,
+              color: {
+                dark: '#000000',
+                light: '#FFFFFF'
+              },
+              width: 300
+            });
+
+            // Create safe filename from student name
+            const safeFileName = student.name.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+            const fileName = `${student.nis}_${safeFileName}.png`;
+            const filePath = path.join(classDir, fileName);
+
+            // Save QR code as PNG file
+            fs.writeFileSync(filePath, qrCodeBuffer);
+
+            // Also generate base64 for response
+            const qrCodeDataURL = `data:image/png;base64,${qrCodeBuffer.toString('base64')}`;
+
+            qrCodes.push({
+              student: {
+                id: student._id,
+                nis: student.nis,
+                name: student.name,
+                // class: student.class,
+                gender: student.gender?"Laki-laki":"Perempuan",
+              },
+              qrData: qrData,
+              qrCodeImage: qrCodeDataURL,
+              savedPath: path.relative(path.join(__dirname, '../..'), filePath)
+            });
+          }
+
+          // Clean up uploaded file
+          fs.unlinkSync(csvFilePath);
+
+          res.send({
+            message: `Successfully created ${createdStudents.length} students and generated ${qrCodes.length} QR codes`,
+            totalStudents: createdStudents.length,
+            totalQRCodes: qrCodes.length,
+            qrCodesDirectory: path.relative(path.join(__dirname, '../..'), qrCodesDir),
+            students: createdStudents,
+            qrCodes: qrCodes
+          });
+
+        } catch (error) {
+          // Clean up uploaded file in case of error
+          if (fs.existsSync(csvFilePath)) {
+            fs.unlinkSync(csvFilePath);
+          }
+          
+          res.status(500).send({
+            message: "Error processing students and QR codes: " + error.message
+          });
+        }
+      })
+      .on('error', (error) => {
+        // Clean up uploaded file
+        if (fs.existsSync(csvFilePath)) {
+          fs.unlinkSync(csvFilePath);
+        }
+        
+        res.status(500).send({
+          message: "Error parsing CSV file: " + error.message
+        });
+      });
+
+  } catch (error) {
+    res.status(500).send({
+      message: "Error processing request: " + error.message
+    });
+  }
+};
+
+// Generate QR Code for single student
+exports.generateStudentQR = async (req, res) => {
+  try {
+    const studentId = req.params.id;
+    
+    // Find student
+    const student = await Student.findById(studentId);
+    if (!student) {
+      return res.status(404).send({ message: "Student not found" });
+    }
+
+    const qrCodesDir = path.join(__dirname, '../../qr-codes');
+    
+    // Ensure QR codes directory exists
+    if (!fs.existsSync(qrCodesDir)) {
+      fs.mkdirSync(qrCodesDir, { recursive: true });
+    }
+
+    // Create JSON data for QR code
+    const qrData = {
+      nis: student.nis,
+      name: student.name,
+      // class: student.class,
+      gender: student.gender?"Laki-laki":"Perempuan",
+      // timestamp: new Date().toISOString()
+    };
+
+    // Create class directory if it doesn't exist
+    const classDir = path.join(qrCodesDir, student.class);
+    if (!fs.existsSync(classDir)) {
+      fs.mkdirSync(classDir, { recursive: true });
+    }
+
+    // Generate QR code as PNG buffer
+    const qrCodeBuffer = await QRCode.toBuffer(JSON.stringify(qrData), {
+      errorCorrectionLevel: 'M',
+      type: 'png',
+      quality: 0.92,
+      margin: 1,
+      color: {
+        dark: '#000000',
+        light: '#FFFFFF'
+      },
+      width: 300
+    });
+
+    // Create safe filename from student name
+    const safeFileName = student.name.replace(/[^a-zA-Z0-9\s]/g, '').replace(/\s+/g, '_');
+    const fileName = `${student.nis}_${safeFileName}.png`;
+    const filePath = path.join(classDir, fileName);
+
+    // Save QR code as PNG file
+    fs.writeFileSync(filePath, qrCodeBuffer);
+
+    // Also generate base64 for response
+    const qrCodeDataURL = `data:image/png;base64,${qrCodeBuffer.toString('base64')}`;
+
+    res.send({
+      message: "QR code generated successfully",
+      student: {
+        id: student._id,
+        nis: student.nis,
+        name: student.name,
+        // class: student.class,
+        gender: student.gender?"Laki-laki":"Perempuan",
+      },
+      qrData: qrData,
+      qrCodeImage: qrCodeDataURL,
+      savedPath: path.relative(path.join(__dirname, '../..'), filePath)
+    });
+
+  } catch (error) {
+    res.status(500).send({
+      message: "Error generating QR code: " + error.message
+    });
+  }
+};
+
+// Get QR codes by class
+exports.getQRCodesByClass = async (req, res) => {
+  try {
+    const { className } = req.params;
+    const qrCodesDir = path.join(__dirname, '../../qr-codes');
+    const classDir = path.join(qrCodesDir, className);
+
+    // Check if class directory exists
+    if (!fs.existsSync(classDir)) {
+      return res.status(404).send({ message: `No QR codes found for class ${className}` });
+    }
+
+    // Read all files in class directory
+    const files = fs.readdirSync(classDir).filter(file => file.endsWith('.png'));
+    
+    const qrCodesList = files.map(file => {
+      const filePath = path.join(classDir, file);
+      const stats = fs.statSync(filePath);
+      
+      return {
+        fileName: file,
+        downloadUrl: `/api/students/qr/download/${className}/${file}`,
+        size: stats.size,
+        created: stats.birthtime
+      };
+    });
+
+    res.send({
+      className: className,
+      totalFiles: qrCodesList.length,
+      qrCodes: qrCodesList
+    });
+
+  } catch (error) {
+    res.status(500).send({
+      message: "Error retrieving QR codes for class: " + error.message
+    });
+  }
+};
+
+// Download QR code file
+exports.downloadQRCode = async (req, res) => {
+  try {
+    const { className, fileName } = req.params;
+    const qrCodesDir = path.join(__dirname, '../../qr-codes');
+    const filePath = path.join(qrCodesDir, className, fileName);
+
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).send({ message: "QR code file not found" });
+    }
+
+    // Set headers for file download
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Content-Disposition', `attachment; filename="${fileName}"`);
+    
+    // Send file
+    res.sendFile(filePath);
+
+  } catch (error) {
+    res.status(500).send({
+      message: "Error downloading QR code: " + error.message
     });
   }
 };

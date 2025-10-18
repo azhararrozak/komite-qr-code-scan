@@ -54,6 +54,34 @@ module.exports = function (app) {
   app.post(
     "/api/students/csv",
     [authJwt.verifyToken, authJwt.isAdmin, upload.single("file")],
-    controller.createStudentsFromCsv
+    controller.createStudentsFromCSVWithQR
+  );
+
+  // Create students from CSV and generate QR codes
+  // app.post(
+  //   "/api/students/csv-with-qr",
+  //   [authJwt.verifyToken, authJwt.isAdmin, upload.single("file")],
+  //   controller.createStudentsFromCSVWithQR
+  // );
+
+  // Generate QR code for single student
+  app.post(
+    "/api/students/:id/generate-qr",
+    [authJwt.verifyToken, authJwt.isAdmin],
+    controller.generateStudentQR
+  );
+
+  // Get QR codes by class
+  app.get(
+    "/api/students/qr/class/:className",
+    [authJwt.verifyToken],
+    controller.getQRCodesByClass
+  );
+
+  // Download QR code file
+  app.get(
+    "/api/students/qr/download/:className/:fileName",
+    [authJwt.verifyToken],
+    controller.downloadQRCode
   );
 };

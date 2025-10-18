@@ -2,10 +2,23 @@ import { useState, useEffect } from 'react'
 import { useStudentStore } from '../../stores/useStudentStore'
 
 const DataSiswa = () => {
-  const { students, pagination, loading, error, getStudentsList, getAvailableClasses, classes } = useStudentStore()
+  const { 
+    students, 
+    pagination, 
+    loading, 
+    error, 
+    getStudentsList, 
+    getAvailableClasses, 
+    classes,
+    generateStudentQR,
+    qrLoading
+  } = useStudentStore()
   const [search, setSearch] = useState('')
   const [selectedClass, setSelectedClass] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
+  const [showQRModal, setShowQRModal] = useState(false)
+  const [selectedStudent, setSelectedStudent] = useState(null)
+  const [qrCodeData, setQRCodeData] = useState(null)
 
   useEffect(() => {
     getAvailableClasses()
@@ -39,6 +52,34 @@ const DataSiswa = () => {
 
   const handlePageChange = (page) => {
     setCurrentPage(page)
+  }
+
+  const handleGenerateQR = async (student) => {
+    try {
+      setSelectedStudent(student)
+      const qrData = await generateStudentQR(student._id)
+      setQRCodeData(qrData)
+      setShowQRModal(true)
+    } catch (error) {
+      console.error('Error generating QR:', error)
+    }
+  }
+
+  const handleCloseModal = () => {
+    setShowQRModal(false)
+    setSelectedStudent(null)
+    setQRCodeData(null)
+  }
+
+  const handleDownloadQR = () => {
+    if (qrCodeData && qrCodeData.qrCodeImage) {
+      const link = document.createElement('a')
+      link.href = qrCodeData.qrCodeImage
+      link.download = `QR_${selectedStudent.nis}_${selectedStudent.name.replace(/\s+/g, '_')}.png`
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    }
   }
 
   const renderPagination = () => {
@@ -150,6 +191,9 @@ const DataSiswa = () => {
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Gender
                     </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      QR Code
+                    </th>
                     {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Target
                     </th> */}
@@ -158,7 +202,7 @@ const DataSiswa = () => {
                 <tbody className="bg-white divide-y divide-gray-200">
                   {students.length === 0 ? (
                     <tr>
-                      <td colSpan="5" className="px-6 py-4 text-center text-gray-500">
+                      <td colSpan="6" className="px-6 py-4 text-center text-gray-500">
                         Tidak ada data siswa
                       </td>
                     </tr>
@@ -176,6 +220,15 @@ const DataSiswa = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {student.gender ? 'Laki-laki' : 'Perempuan'}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <button
+                            onClick={() => handleGenerateQR(student)}
+                            disabled={qrLoading}
+                            className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-3 py-1 rounded text-xs transition-colors duration-200"
+                          >
+                            {qrLoading ? 'Loading...' : 'Generate QR'}
+                          </button>
                         </td>
                         {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           Rp {student.targetAmount?.toLocaleString('id-ID') || '0'}
@@ -197,6 +250,65 @@ const DataSiswa = () => {
             </div>
           )}
         </>
+      )}
+
+      {/* QR Code Modal */}
+      {showQRModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="text-lg font-semibold">QR Code - {selectedStudent?.name}</h3>
+              <button
+                onClick={handleCloseModal}
+                className="text-gray-500 hover:text-gray-700 text-xl"
+              >
+                ×
+              </button>
+            </div>
+            
+            {qrCodeData ? (
+              <div className="text-center">
+                <div className="mb-4 p-4 bg-gray-50 rounded-lg">
+                  <div className="text-sm text-gray-600 mb-2">
+                    <div><strong>NIS:</strong> {selectedStudent?.nis}</div>
+                    <div><strong>Nama:</strong> {selectedStudent?.name}</div>
+                    <div><strong>Kelas:</strong> {selectedStudent?.class}</div>
+                    <div><strong>Gender:</strong> {selectedStudent?.gender ? 'Laki-laki' : 'Perempuan'}</div>
+                  </div>
+                </div>
+                
+                <div className="mb-4 flex justify-center">
+                  <img 
+                    src={qrCodeData.qrCodeImage} 
+                    alt={`QR Code for ${selectedStudent?.name}`}
+                    className="border rounded-lg"
+                    style={{ maxWidth: '250px', maxHeight: '250px' }}
+                  />
+                </div>
+                
+                <div className="flex gap-2 justify-center">
+                  <button
+                    onClick={handleDownloadQR}
+                    className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded transition-colors duration-200"
+                  >
+                    Download QR
+                  </button>
+                  <button
+                    onClick={handleCloseModal}
+                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded transition-colors duration-200"
+                  >
+                    Tutup
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <p className="mt-2">Generating QR Code...</p>
+              </div>
+            )}
+          </div>
+        </div>
       )}
     </div>
   )

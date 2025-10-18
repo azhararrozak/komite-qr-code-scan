@@ -73,8 +73,21 @@ const TambahSiswa = () => {
     try {
       // Call the API to upload the file
         const result = await createStudentCsv(file);
-        setMessage({ type: "success", text: "Upload berhasil!" });
-        setUploadResult(result);
+        
+        // Handle different response formats from backend
+        const inserted = result.inserted || result.totalStudents || 0;
+        const total = result.total || result.totalQRCodes || csvData?.length || 0;
+        
+        const successMessage = `Upload berhasil! ${inserted} siswa ditambahkan${total > 0 ? ` dari ${total} data` : ''}.`;
+        setMessage({ type: "success", text: successMessage });
+        
+        // Normalize the result format for display
+        const normalizedResult = {
+          inserted: inserted,
+          total: total,
+          ...result
+        };
+        setUploadResult(normalizedResult);
         setFile(null);
         if (fileInputRef.current) {
           fileInputRef.current.value = "";
@@ -347,21 +360,21 @@ const TambahSiswa = () => {
                 Berhasil ditambahkan
               </p>
               <p className="text-3xl font-bold text-green-700">
-                {uploadResult.inserted || 0}
+                {uploadResult.inserted || uploadResult.totalStudents || 0}
               </p>
             </div>
             <div className="bg-blue-50 rounded-lg p-4">
               <p className="text-sm text-blue-600 font-medium">
-                Total baris CSV
+                Total data diproses
               </p>
               <p className="text-3xl font-bold text-blue-700">
-                {uploadResult.total || 0}
+                {uploadResult.total || uploadResult.totalQRCodes || (uploadResult.students && uploadResult.students.length) || 0}
               </p>
             </div>
           </div>
-          {uploadResult.inserted !== uploadResult.total && (
+          {(uploadResult.inserted !== uploadResult.total && uploadResult.total > 0) && (
             <p className="mt-3 text-sm text-gray-600">
-              ⚠️ {uploadResult.total - uploadResult.inserted} baris dilewati
+              ⚠️ {uploadResult.total - uploadResult.inserted} data dilewati
               (data tidak lengkap atau duplikat)
             </p>
           )}
