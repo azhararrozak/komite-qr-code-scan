@@ -70,7 +70,30 @@ const ScanQr = () => {
           setCameras(devices);
           setCameraStatus("Kamera tersedia - Klik 'Mulai Scan'");
 
-          // Auto start camera with first device
+          // Find back camera (environment facing) or use last camera
+          let defaultCameraId = devices[0].id;
+          let defaultCameraIndex = 0;
+
+          // Try to find back camera
+          const backCameraIndex = devices.findIndex(
+            (device) =>
+              device.label.toLowerCase().includes("back") ||
+              device.label.toLowerCase().includes("rear") ||
+              device.label.toLowerCase().includes("environment")
+          );
+
+          if (backCameraIndex !== -1) {
+            defaultCameraId = devices[backCameraIndex].id;
+            defaultCameraIndex = backCameraIndex;
+          } else if (devices.length > 1) {
+            // If no back camera found by label, use last camera (usually back camera on mobile)
+            defaultCameraId = devices[devices.length - 1].id;
+            defaultCameraIndex = devices.length - 1;
+          }
+
+          setCurrentCameraIndex(defaultCameraIndex);
+
+          // Auto start camera with back camera
           const startFirstCamera = async () => {
             try {
               if (!scannerRef.current) {
@@ -83,7 +106,7 @@ const ScanQr = () => {
               };
 
               await scannerRef.current.start(
-                devices[0].id,
+                defaultCameraId,
                 config,
                 (decodedText) => {
                   handleQRScan(decodedText);
@@ -127,8 +150,23 @@ const ScanQr = () => {
         qrbox: { width: 250, height: 250 },
       };
 
+      // Use provided cameraId or find back camera
+      let cameraToUse = cameraId;
+      if (!cameraToUse && cameras.length > 0) {
+        // Find back camera
+        const backCamera = cameras.find(
+          (device) =>
+            device.label.toLowerCase().includes("back") ||
+            device.label.toLowerCase().includes("rear") ||
+            device.label.toLowerCase().includes("environment")
+        );
+        cameraToUse = backCamera
+          ? backCamera.id
+          : cameras[cameras.length - 1].id;
+      }
+
       await scannerRef.current.start(
-        cameraId || cameras[0]?.id || { facingMode: "environment" },
+        cameraToUse || { facingMode: "environment" },
         config,
         (decodedText) => {
           handleQRScan(decodedText);
@@ -254,9 +292,7 @@ const ScanQr = () => {
             <div className="mt-4 sm:mt-6 flex flex-wrap gap-3 justify-center items-center">
               {!isScanning ? (
                 <button
-                  onClick={() =>
-                    cameras.length > 0 && startScanning(cameras[0].id)
-                  }
+                  onClick={() => cameras.length > 0 && startScanning()}
                   disabled={cameras.length === 0}
                   className="px-6 py-3 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-xl hover:from-green-700 hover:to-green-800 disabled:from-gray-400 disabled:to-gray-500 disabled:cursor-not-allowed font-medium shadow-lg transition-all duration-200 text-sm sm:text-base"
                 >
