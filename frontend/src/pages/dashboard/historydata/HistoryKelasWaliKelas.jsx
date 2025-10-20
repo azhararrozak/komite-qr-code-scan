@@ -670,19 +670,25 @@ const HistoryKelasWaliKelas = () => {
                                   {/* Details */}
                                   <div className="space-y-2">
                                     <div className="flex justify-between text-sm">
-                                      <span className="text-gray-500">Tanggal:</span>
+                                      <span className="text-gray-500">
+                                        Tanggal:
+                                      </span>
                                       <span className="font-medium text-gray-900">
                                         {formatDate(payment.paidAt)}
                                       </span>
                                     </div>
                                     <div className="flex justify-between text-sm">
-                                      <span className="text-gray-500">Metode:</span>
+                                      <span className="text-gray-500">
+                                        Metode:
+                                      </span>
                                       <span className="font-medium text-gray-900 capitalize">
                                         {payment.method}
                                       </span>
                                     </div>
                                     <div className="flex justify-between text-sm">
-                                      <span className="text-gray-500">Dikumpulkan oleh:</span>
+                                      <span className="text-gray-500">
+                                        Dikumpulkan oleh:
+                                      </span>
                                       <span className="font-medium text-gray-900">
                                         {payment.collectedBy?.name ||
                                           payment.collectedBy?.username ||
@@ -691,8 +697,12 @@ const HistoryKelasWaliKelas = () => {
                                     </div>
                                     {payment.note && (
                                       <div className="pt-2 border-t border-gray-100">
-                                        <p className="text-xs text-gray-500 mb-1">Catatan:</p>
-                                        <p className="text-sm text-gray-700">{payment.note}</p>
+                                        <p className="text-xs text-gray-500 mb-1">
+                                          Catatan:
+                                        </p>
+                                        <p className="text-sm text-gray-700">
+                                          {payment.note}
+                                        </p>
                                       </div>
                                     )}
                                   </div>

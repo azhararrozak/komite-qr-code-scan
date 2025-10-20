@@ -376,7 +376,9 @@ const HistoryPembayaran = () => {
                             </span>
                           </div>
                           <div className="flex justify-between text-sm">
-                            <span className="text-gray-500">Dikumpulkan oleh:</span>
+                            <span className="text-gray-500">
+                              Dikumpulkan oleh:
+                            </span>
                             <span className="font-medium text-gray-900">
                               {payment.collectedBy?.name ||
                                 payment.collectedBy?.username ||
@@ -385,8 +387,12 @@ const HistoryPembayaran = () => {
                           </div>
                           {payment.note && (
                             <div className="pt-2 border-t border-gray-200">
-                              <p className="text-xs text-gray-500 mb-1">Catatan:</p>
-                              <p className="text-sm text-gray-700">{payment.note}</p>
+                              <p className="text-xs text-gray-500 mb-1">
+                                Catatan:
+                              </p>
+                              <p className="text-sm text-gray-700">
+                                {payment.note}
+                              </p>
                             </div>
                           )}
                         </div>
