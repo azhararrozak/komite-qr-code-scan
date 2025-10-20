@@ -29,10 +29,11 @@ const HomepageHeader = () => {
           <Link to="/" onClick={closeMenu}>
             <img
               className="w-15 object-contain cursor-pointer"
-              src="/SatuDev.svg"
+              src="/spenduna.webp"
               alt="Logo"
             />
           </Link>
+          <h1 className="text-lg font-bold">Komite QR Code Scan</h1>
         </div>
 
         {/* Desktop Menu */}

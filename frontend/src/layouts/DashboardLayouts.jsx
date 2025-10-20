@@ -102,18 +102,8 @@ const DashboardLayouts = ({ children }) => {
         <footer className="bg-white border-t px-6 py-4">
           <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between">
             <div className="text-sm text-gray-600">
-              © {new Date().getFullYear()} SatuDev Dashboard
-            </div>
-            <div className="mt-2 sm:mt-0 space-x-4">
-              <a href="#" className="text-sm text-indigo-600">
-                Support
-              </a>
-              <a href="#" className="text-sm text-gray-600">
-                Privacy
-              </a>
-              <a href="#" className="text-sm text-gray-600">
-                Terms
-              </a>
+              © {new Date().getFullYear()} Komite QR Code Scan. All rights
+              reserved.
             </div>
           </div>
         </footer>
