@@ -184,30 +184,32 @@ const RekapDataWaliKelas = () => {
         </div>
       </div>
 
-      <form onSubmit={handleSearchSubmit} className="flex gap-4 mb-6">
-        <input
-          type="text"
-          placeholder="Cari siswa berdasarkan nama atau NIS..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">Semua Status</option>
-          <option value="lunas">Lunas</option>
-          <option value="belum_lunas">Belum Lunas</option>
-          <option value="belum_dibayar">Belum Dibayar</option>
-        </select>
-        <button
-          type="submit"
-          className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-        >
-          Cari
-        </button>
+      <form onSubmit={handleSearchSubmit} className="mb-6">
+        <div className="flex flex-col md:flex-row gap-3">
+          <input
+            type="text"
+            placeholder="Cari siswa berdasarkan nama atau NIS..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full md:w-auto px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Semua Status</option>
+            <option value="lunas">Lunas</option>
+            <option value="belum_lunas">Belum Lunas</option>
+            <option value="belum_dibayar">Belum Dibayar</option>
+          </select>
+          <button
+            type="submit"
+            className="w-full md:w-auto px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-150"
+          >
+            Cari
+          </button>
+        </div>
       </form>
 
       {/* Button Export to Excel */}
@@ -219,9 +221,22 @@ const RekapDataWaliKelas = () => {
               `Rekap_Data_Kelas_${classAssigned}`
             )
           }
-          className="px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
+          className="w-full md:w-auto px-6 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition duration-150 flex items-center justify-center gap-2"
         >
-          Export to Excel
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+            />
+          </svg>
+          <span>Export to Excel</span>
         </button>
       </div>
 
@@ -231,81 +246,172 @@ const RekapDataWaliKelas = () => {
           <p className="mt-2">Memuat data...</p>
         </div>
       ) : (
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="overflow-x-auto">
-            <table className="min-w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    NIS
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Nama
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Gender
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Target
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Dibayar
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Sisa
-                  </th>
-                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
-                    Status
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-200">
-                {sortedStudents.length === 0 ? (
+        <>
+          {/* Desktop Table View */}
+          <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="min-w-full">
+                <thead className="bg-gray-50">
                   <tr>
-                    <td
-                      colSpan="7"
-                      className="px-6 py-4 text-center text-gray-500"
-                    >
-                      Tidak ada data siswa
-                    </td>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      NIS
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Nama
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Gender
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Target
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Dibayar
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Sisa
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Status
+                    </th>
                   </tr>
-                ) : (
-                  sortedStudents.map((student) => (
-                    <tr key={student._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        {student.nis}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {student.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {student.gender ? "Laki-laki" : "Perempuan"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {formatRupiah(student.targetAmount)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">
-                        {formatRupiah(student.paidAmount)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-orange-600">
-                        {formatRupiah(student.remainingAmount)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 py-1 text-xs rounded-full ${getStatusBadge(
-                            student.status
-                          )}`}
-                        >
-                          {student.status}
-                        </span>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {sortedStudents.length === 0 ? (
+                    <tr>
+                      <td
+                        colSpan="7"
+                        className="px-6 py-4 text-center text-gray-500"
+                      >
+                        Tidak ada data siswa
                       </td>
                     </tr>
-                  ))
-                )}
-              </tbody>
-            </table>
+                  ) : (
+                    sortedStudents.map((student) => (
+                      <tr key={student._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {student.nis}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {student.name}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          {student.gender ? "Laki-laki" : "Perempuan"}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {formatRupiah(student.targetAmount)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                          {formatRupiah(student.paidAmount)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-orange-600">
+                          {formatRupiah(student.remainingAmount)}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadge(
+                              student.status
+                            )}`}
+                          >
+                            {student.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
+
+          {/* Mobile Card View */}
+          <div className="md:hidden space-y-4">
+            {sortedStudents.length === 0 ? (
+              <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
+                Tidak ada data siswa
+              </div>
+            ) : (
+              sortedStudents.map((student) => (
+                <div
+                  key={student._id}
+                  className="bg-white rounded-lg shadow p-4 space-y-3"
+                >
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <h3 className="font-semibold text-gray-900">
+                        {student.name}
+                      </h3>
+                      <p className="text-sm text-gray-600">
+                        NIS: {student.nis}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-1">
+                        {student.gender ? "Laki-laki" : "Perempuan"}
+                      </p>
+                    </div>
+                    <span
+                      className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadge(
+                        student.status
+                      )}`}
+                    >
+                      {student.status}
+                    </span>
+                  </div>
+
+                  <div className="border-t pt-3 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Target:</span>
+                      <span className="font-medium text-gray-900">
+                        {formatRupiah(student.targetAmount)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Dibayar:</span>
+                      <span className="font-medium text-green-600">
+                        {formatRupiah(student.paidAmount)}
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Sisa:</span>
+                      <span className="font-medium text-orange-600">
+                        {formatRupiah(student.remainingAmount)}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Progress Bar */}
+                  <div className="pt-2">
+                    <div className="flex justify-between text-xs text-gray-600 mb-1">
+                      <span>Progress Pembayaran</span>
+                      <span>
+                        {student.targetAmount > 0
+                          ? Math.round(
+                              (student.paidAmount / student.targetAmount) * 100
+                            )
+                          : 0}
+                        %
+                      </span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                        style={{
+                          width: `${
+                            student.targetAmount > 0
+                              ? Math.round(
+                                  (student.paidAmount / student.targetAmount) *
+                                    100
+                                )
+                              : 0
+                          }%`,
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </>
       )}
     </div>
   );

@@ -109,36 +109,39 @@ const RekapDataAdmin = () => {
   const renderClassSummary = () => (
     <div className="space-y-4">
       {classSummary.map((cls) => (
-        <div key={cls.className} className="bg-white border rounded-lg p-6">
-          <div className="flex justify-between items-start mb-4">
+        <div
+          key={cls.className}
+          className="bg-white border rounded-lg p-4 md:p-6"
+        >
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
             <h3 className="text-lg font-semibold">{cls.className}</h3>
             <span className="text-sm text-gray-500">
               {cls.totalStudents} siswa
             </span>
           </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-4">
             <div>
-              <p className="text-sm text-gray-600">Target</p>
-              <p className="font-semibold">
+              <p className="text-xs md:text-sm text-gray-600">Target</p>
+              <p className="font-semibold text-sm md:text-base">
                 {formatRupiah(cls.totalTargetAmount)}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Terkumpul</p>
-              <p className="font-semibold text-green-600">
+              <p className="text-xs md:text-sm text-gray-600">Terkumpul</p>
+              <p className="font-semibold text-green-600 text-sm md:text-base">
                 {formatRupiah(cls.totalPaidAmount)}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Sisa</p>
-              <p className="font-semibold text-orange-600">
+              <p className="text-xs md:text-sm text-gray-600">Sisa</p>
+              <p className="font-semibold text-orange-600 text-sm md:text-base">
                 {formatRupiah(cls.totalRemainingAmount)}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Progress</p>
-              <p className="font-semibold text-blue-600">
+              <p className="text-xs md:text-sm text-gray-600">Progress</p>
+              <p className="font-semibold text-blue-600 text-sm md:text-base">
                 {cls.totalTargetAmount > 0
                   ? Math.round(
                       (cls.totalPaidAmount / cls.totalTargetAmount) * 100
@@ -149,14 +152,32 @@ const RekapDataAdmin = () => {
             </div>
           </div>
 
-          <div className="flex space-x-4 text-sm">
-            <span className="text-green-600">Lunas: {cls.paidStudents}</span>
+          <div className="flex flex-col sm:flex-row gap-2 sm:space-x-4 text-xs md:text-sm">
+            <span className="text-green-600">✓ Lunas: {cls.paidStudents}</span>
             <span className="text-yellow-600">
-              Belum Lunas: {cls.partialPaidStudents}
+              ⚠ Belum Lunas: {cls.partialPaidStudents}
             </span>
             <span className="text-red-600">
-              Belum Bayar: {cls.unpaidStudents}
+              ✗ Belum Bayar: {cls.unpaidStudents}
             </span>
+          </div>
+
+          {/* Progress Bar for Mobile */}
+          <div className="mt-3 md:hidden">
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                style={{
+                  width: `${
+                    cls.totalTargetAmount > 0
+                      ? Math.round(
+                          (cls.totalPaidAmount / cls.totalTargetAmount) * 100
+                        )
+                      : 0
+                  }%`,
+                }}
+              ></div>
+            </div>
           </div>
         </div>
       ))}
@@ -165,95 +186,194 @@ const RekapDataAdmin = () => {
 
   const renderStudentList = () => (
     <div className="space-y-4">
-      <form onSubmit={handleSearchSubmit} className="flex gap-4 mb-6">
-        <input
-          type="text"
-          placeholder="Cari siswa..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        />
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="">Semua Status</option>
-          <option value="PAID">Lunas</option>
-          <option value="PARTIAL">Belum Lunas</option>
-          <option value="UNPAID">Belum Dibayar</option>
-        </select>
-        <button
-          type="submit"
-          className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
-        >
-          Cari
-        </button>
+      <form onSubmit={handleSearchSubmit} className="mb-6">
+        <div className="flex flex-col md:flex-row gap-3">
+          <input
+            type="text"
+            placeholder="Cari siswa..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            className="w-full md:w-auto px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="">Semua Status</option>
+            <option value="PAID">Lunas</option>
+            <option value="PARTIAL">Belum Lunas</option>
+            <option value="UNPAID">Belum Dibayar</option>
+          </select>
+          <button
+            type="submit"
+            className="w-full md:w-auto px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition duration-150"
+          >
+            Cari
+          </button>
+        </div>
       </form>
 
-      <div className="bg-white rounded-lg shadow overflow-hidden">
+      {/* Desktop Table View */}
+      <div className="hidden md:block bg-white rounded-lg shadow overflow-hidden">
         <div className="overflow-x-auto">
           <table className="min-w-full">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   NIS
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Nama
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Kelas
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Target
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Dibayar
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Sisa
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {reportData.map((student) => (
-                <tr key={student._id} className="hover:bg-gray-50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    {student.nis}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    {student.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    {student.class}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm">
-                    {formatRupiah(student.targetAmount)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-green-600">
-                    {formatRupiah(student.paidAmount)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-orange-600">
-                    {formatRupiah(student.remainingAmount)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span
-                      className={`px-2 py-1 text-xs rounded-full ${getStatusBadge(
-                        student.status
-                      )}`}
-                    >
-                      {student.status}
-                    </span>
+              {reportData.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan="7"
+                    className="px-6 py-4 text-center text-gray-500"
+                  >
+                    Tidak ada data siswa
                   </td>
                 </tr>
-              ))}
+              ) : (
+                reportData.map((student) => (
+                  <tr key={student._id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      {student.nis}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {student.name}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                      {student.class}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      {formatRupiah(student.targetAmount)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">
+                      {formatRupiah(student.paidAmount)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-orange-600">
+                      {formatRupiah(student.remainingAmount)}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      <span
+                        className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadge(
+                          student.status
+                        )}`}
+                      >
+                        {student.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
+      </div>
+
+      {/* Mobile Card View */}
+      <div className="md:hidden space-y-4">
+        {reportData.length === 0 ? (
+          <div className="bg-white rounded-lg shadow p-6 text-center text-gray-500">
+            Tidak ada data siswa
+          </div>
+        ) : (
+          reportData.map((student) => (
+            <div
+              key={student._id}
+              className="bg-white rounded-lg shadow p-4 space-y-3"
+            >
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="font-semibold text-gray-900">
+                    {student.name}
+                  </h3>
+                  <p className="text-sm text-gray-600">NIS: {student.nis}</p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Kelas: {student.class}
+                  </p>
+                </div>
+                <span
+                  className={`px-2 py-1 text-xs font-medium rounded-full ${getStatusBadge(
+                    student.status
+                  )}`}
+                >
+                  {student.status}
+                </span>
+              </div>
+
+              <div className="border-t pt-3 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Target:</span>
+                  <span className="font-medium text-gray-900">
+                    {formatRupiah(student.targetAmount)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Dibayar:</span>
+                  <span className="font-medium text-green-600">
+                    {formatRupiah(student.paidAmount)}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-600">Sisa:</span>
+                  <span className="font-medium text-orange-600">
+                    {formatRupiah(student.remainingAmount)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="pt-2">
+                <div className="flex justify-between text-xs text-gray-600 mb-1">
+                  <span>Progress Pembayaran</span>
+                  <span>
+                    {student.targetAmount > 0
+                      ? Math.round(
+                          (student.paidAmount / student.targetAmount) * 100
+                        )
+                      : 0}
+                    %
+                  </span>
+                </div>
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-green-500 h-2 rounded-full transition-all duration-300"
+                    style={{
+                      width: `${
+                        student.targetAmount > 0
+                          ? Math.round(
+                              (student.paidAmount / student.targetAmount) * 100
+                            )
+                          : 0
+                      }%`,
+                    }}
+                  ></div>
+                </div>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );
@@ -274,11 +394,11 @@ const RekapDataAdmin = () => {
         </div>
       )}
 
-      <div className="mb-6">
-        <nav className="flex space-x-8">
+      <div className="mb-6 border-b border-gray-200">
+        <nav className="flex space-x-4 md:space-x-8 overflow-x-auto">
           <button
             onClick={() => setActiveTab("overview")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+            className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
               activeTab === "overview"
                 ? "border-blue-500 text-blue-600"
                 : "border-transparent text-gray-500 hover:text-gray-700"
@@ -288,7 +408,7 @@ const RekapDataAdmin = () => {
           </button>
           <button
             onClick={() => setActiveTab("classes")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+            className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
               activeTab === "classes"
                 ? "border-blue-500 text-blue-600"
                 : "border-transparent text-gray-500 hover:text-gray-700"
@@ -298,7 +418,7 @@ const RekapDataAdmin = () => {
           </button>
           <button
             onClick={() => setActiveTab("students")}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
+            className={`py-2 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
               activeTab === "students"
                 ? "border-blue-500 text-blue-600"
                 : "border-transparent text-gray-500 hover:text-gray-700"
