@@ -17,6 +17,9 @@ import WaliKelasLayout from "./pages/dashboard/walikelas/WaliKelasLayout";
 import TambahWaliKelas from "./pages/dashboard/walikelas/TambahWaliKelas";
 import ScanQr from "./pages/dashboard/ScanQr";
 import EditWaliKelas from "./pages/dashboard/walikelas/EditWaliKelas";
+import HistoryPembayaran from "./pages/dashboard/HistoryPembayaran";
+import HistoryKelasAdmin from "./pages/dashboard/historydata/HistoryKelasAdmin";
+import HistoryKelasWaliKelas from "./pages/dashboard/historydata/HistoryKelasWaliKelas";
 
 function App() {
   return (
@@ -52,6 +55,16 @@ function App() {
           }
         />
         <Route path="rekap-data" element={<RekapDataWaliKelas />} />
+        <Route path="history-pembayaran" element={<HistoryPembayaran />} />
+        <Route
+          path="history-kelas-admin"
+          element={
+            <AdminRoute>
+              <HistoryKelasAdmin />
+            </AdminRoute>
+          }
+        />
+        <Route path="history-kelas" element={<HistoryKelasWaliKelas />} />
         <Route path="data-siswa" element={<DataSiswa />} />
         <Route
           path="wali-kelas"

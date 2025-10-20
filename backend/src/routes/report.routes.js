@@ -1,8 +1,8 @@
 const { authJwt } = require("../middleware");
 const controller = require("../controllers/report.controller");
 
-module.exports = function(app) {
-  app.use(function(req, res, next) {
+module.exports = function (app) {
+  app.use(function (req, res, next) {
     res.header(
       "Access-Control-Allow-Headers",
       "x-access-token, Origin, Content-Type, Accept"
@@ -10,7 +10,31 @@ module.exports = function(app) {
     next();
   });
 
-    app.get("/api/reports/class/summary", [authJwt.verifyToken], controller.getStudentSummaryByClass);
-    app.get("/api/reports/class/:className/students", [authJwt.verifyToken], controller.getStudentsByClass);
-    app.get("/api/reports/statistics", [authJwt.verifyToken], controller.getGlobalStatistics);
+  app.get(
+    "/api/reports/class/summary",
+    [authJwt.verifyToken],
+    controller.getStudentSummaryByClass
+  );
+  app.get(
+    "/api/reports/class/:className/students",
+    [authJwt.verifyToken],
+    controller.getStudentsByClass
+  );
+  app.get(
+    "/api/reports/statistics",
+    [authJwt.verifyToken],
+    controller.getGlobalStatistics
+  );
+
+  // New endpoints for payment history
+  app.get(
+    "/api/reports/student/:nis/history",
+    [authJwt.verifyToken],
+    controller.getStudentPaymentHistory
+  );
+  app.get(
+    "/api/reports/class/:className/history",
+    [authJwt.verifyToken],
+    controller.getClassPaymentHistory
+  );
 };

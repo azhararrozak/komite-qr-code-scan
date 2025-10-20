@@ -178,12 +178,10 @@ exports.getStudentSummaryByClass = async (req, res) => {
     const result = await Student.aggregate(pipeline);
     res.json(result);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error generating class summary",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error generating class summary",
+      error: error.message,
+    });
   }
 };
 
@@ -258,12 +256,10 @@ exports.getStudentsByClass = async (req, res) => {
 
     res.json(studentsWithPayments);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error fetching students by class",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error fetching students by class",
+      error: error.message,
+    });
   }
 };
 
@@ -346,11 +342,192 @@ exports.getGlobalStatistics = async (req, res) => {
 
     res.json(result);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "Error fetching global statistics",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error fetching global statistics",
+      error: error.message,
+    });
+  }
+};
+
+// Get payment history for a specific student by NIS
+exports.getStudentPaymentHistory = async (req, res) => {
+  try {
+    const { nis } = req.params;
+
+    // Find student by NIS
+    const student = await Student.findOne({ nis }).lean();
+
+    if (!student) {
+      return res.status(404).json({ message: "Siswa tidak ditemukan" });
+    }
+
+    // Get all payments for this student, sorted by date (newest first)
+    const payments = await Payment.find({ studentId: student._id })
+      .populate("collectedBy", "username name email")
+      .sort({ paidAt: -1 })
+      .lean();
+
+    // Calculate totals
+    const totalPaid = payments.reduce(
+      (sum, payment) => sum + payment.amount,
+      0
+    );
+    const remainingAmount = Math.max(student.targetAmount - totalPaid, 0);
+    const status =
+      totalPaid >= student.targetAmount
+        ? "Lunas"
+        : totalPaid > 0
+        ? "Belum Lunas"
+        : "Belum Dibayar";
+
+    // Format payment history with payment number
+    const paymentHistory = payments.map((payment, index) => ({
+      paymentNumber: payments.length - index, // Pembayaran ke-1, ke-2, dst
+      amount: payment.amount,
+      paidAt: payment.paidAt,
+      method: payment.method || "cash",
+      note: payment.note || "",
+      collectedBy: payment.collectedBy
+        ? {
+            username: payment.collectedBy.username,
+            name: payment.collectedBy.name,
+            email: payment.collectedBy.email,
+          }
+        : null,
+      _id: payment._id,
+    }));
+
+    const result = {
+      student: {
+        _id: student._id,
+        nis: student.nis,
+        name: student.name,
+        class: student.class,
+        gender: student.gender,
+        targetAmount: student.targetAmount,
+      },
+      summary: {
+        totalPaid,
+        remainingAmount,
+        status,
+        totalPayments: payments.length,
+        paymentPercentage:
+          student.targetAmount > 0
+            ? ((totalPaid / student.targetAmount) * 100).toFixed(2)
+            : 0,
+      },
+      paymentHistory,
+    };
+
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching student payment history",
+      error: error.message,
+    });
+  }
+};
+
+// Get payment history for all students in a specific class
+exports.getClassPaymentHistory = async (req, res) => {
+  try {
+    const { className } = req.params;
+
+    // Find all students in the class
+    const students = await Student.find({ class: className }).lean();
+
+    if (!students.length) {
+      return res.json([]);
+    }
+
+    const studentIds = students.map((s) => s._id);
+
+    // Get all payments for these students
+    const payments = await Payment.find({ studentId: { $in: studentIds } })
+      .populate("collectedBy", "username name email")
+      .populate("studentId", "nis name class")
+      .sort({ paidAt: -1 })
+      .lean();
+
+    // Group payments by student
+    const studentPaymentMap = new Map();
+    const studentTotalMap = new Map();
+
+    payments.forEach((payment) => {
+      const studentId = String(payment.studentId._id);
+
+      if (!studentPaymentMap.has(studentId)) {
+        studentPaymentMap.set(studentId, []);
+        studentTotalMap.set(studentId, 0);
+      }
+
+      studentPaymentMap.get(studentId).push(payment);
+      studentTotalMap.set(
+        studentId,
+        studentTotalMap.get(studentId) + payment.amount
+      );
+    });
+
+    // Build result for each student
+    const result = students.map((student) => {
+      const studentId = String(student._id);
+      const studentPayments = studentPaymentMap.get(studentId) || [];
+      const totalPaid = studentTotalMap.get(studentId) || 0;
+      const remainingAmount = Math.max(student.targetAmount - totalPaid, 0);
+      const status =
+        totalPaid >= student.targetAmount
+          ? "Lunas"
+          : totalPaid > 0
+          ? "Belum Lunas"
+          : "Belum Dibayar";
+
+      // Format payment history with payment number
+      const paymentHistory = studentPayments
+        .sort((a, b) => new Date(b.paidAt) - new Date(a.paidAt))
+        .map((payment, index) => ({
+          paymentNumber: studentPayments.length - index,
+          amount: payment.amount,
+          paidAt: payment.paidAt,
+          method: payment.method || "cash",
+          note: payment.note || "",
+          collectedBy: payment.collectedBy
+            ? {
+                username: payment.collectedBy.username,
+                name: payment.collectedBy.name,
+              }
+            : null,
+        }));
+
+      return {
+        student: {
+          _id: student._id,
+          nis: student.nis,
+          name: student.name,
+          class: student.class,
+          targetAmount: student.targetAmount,
+        },
+        summary: {
+          totalPaid,
+          remainingAmount,
+          status,
+          totalPayments: studentPayments.length,
+          paymentPercentage:
+            student.targetAmount > 0
+              ? ((totalPaid / student.targetAmount) * 100).toFixed(2)
+              : 0,
+        },
+        paymentHistory,
+      };
+    });
+
+    // Sort by name alphabetically
+    result.sort((a, b) => a.student.name.localeCompare(b.student.name, "id"));
+
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({
+      message: "Error fetching class payment history",
+      error: error.message,
+    });
   }
 };

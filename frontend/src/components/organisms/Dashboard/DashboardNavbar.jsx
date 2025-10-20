@@ -114,6 +114,42 @@ const DashboardNavbar = ({ closeSidebar }) => {
             {isAdmin ? "Rekap Data Pembayaran" : "Rekap Data Kelas"}
           </NavLink>
         </li>
+
+        {/* History Pembayaran - accessible for admin only */}
+        {isAdmin && (
+          <li>
+            <NavLink
+              to="/dashboard/history-pembayaran"
+              onClick={handleNavClick}
+              className={({ isActive }) =>
+                isActive
+                  ? "block px-4 py-2 bg-gray-200 rounded"
+                  : "block px-4 py-2 hover:bg-gray-50 rounded"
+              }
+            >
+              History Pembayaran
+            </NavLink>
+          </li>
+        )}
+
+        {/* History Kelas - different routes for admin and wali kelas */}
+        <li>
+          <NavLink
+            to={
+              isAdmin
+                ? "/dashboard/history-kelas-admin"
+                : "/dashboard/history-kelas"
+            }
+            onClick={handleNavClick}
+            className={({ isActive }) =>
+              isActive
+                ? "block px-4 py-2 bg-gray-200 rounded"
+                : "block px-4 py-2 hover:bg-gray-50 rounded"
+            }
+          >
+            {isAdmin ? "History Per Kelas (Admin)" : "History Kelas Saya"}
+          </NavLink>
+        </li>
       </ul>
     </nav>
   );
