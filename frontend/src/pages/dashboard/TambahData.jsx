@@ -36,6 +36,14 @@ const TambahData = () => {
     loadPaymentInfo();
   }, [nis, fetchPaymentInfo]);
 
+  // Cleanup effect - hapus flag QR scan ketika component unmount
+  useEffect(() => {
+    return () => {
+      // Cleanup ketika component unmount (user pindah halaman)
+      sessionStorage.removeItem('fromQRScan');
+    };
+  }, []);
+
   //handle form submit
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -83,6 +91,9 @@ const TambahData = () => {
         position: "top-right",
         icon: "✅",
       });
+
+      // Clear QR scan flag since payment is successful
+      sessionStorage.removeItem('fromQRScan');
 
       // Redirect to dashboard after 1.5 seconds
       setTimeout(() => {

@@ -6,6 +6,7 @@ import DashboardLayout from "./pages/dashboard/DashboardLayout";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import AdminRoute from "./routes/AdminRoute";
 import GuestRoute from "./routes/GuestRoute";
+import QRScanRoute from "./routes/QRScanRoute";
 import NotFound from "./pages/NotFound";
 import TambahData from "./pages/dashboard/TambahData";
 import RekapDataAdmin from "./pages/dashboard/rekapdata/RekapDataAdmin";
@@ -101,12 +102,14 @@ function App() {
         }
       />
 
-      {/* Reader QR with protected route */}
+      {/* Reader QR with protected route and QR scan middleware */}
       <Route
         path="/tambah-data/:nis"
         element={
           <ProtectedRoute>
-            <TambahData />
+            <QRScanRoute>
+              <TambahData />
+            </QRScanRoute>
           </ProtectedRoute>
         }
       />
