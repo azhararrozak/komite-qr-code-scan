@@ -79,15 +79,62 @@ const HistoryKelas = () => {
   const downloadExcel = () => {
     if (!classData || classData.length === 0) return;
 
-    const excelData = [
-      [`HISTORY PEMBAYARAN KELAS ${className}`],
-      [],
-      ["Total Siswa", classData.length],
-      ["Tanggal Export", new Date().toLocaleDateString("id-ID")],
-      [],
-    ];
+    // Find maximum number of payments to determine columns needed
+    const maxPayments = Math.max(
+      ...classData.map((s) => s.paymentHistory.length)
+    );
 
-    // Summary statistics
+    const excelData = [];
+
+    // Title
+    excelData.push(["Rekap Data Gotong Royong Komite"]);
+    excelData.push([`Kelas ${className}`]);
+    excelData.push([
+      `Tanggal Export: ${new Date().toLocaleDateString("id-ID")}`,
+    ]);
+    excelData.push([]); // Empty row
+
+    // Create header rows
+    const headerRow1 = ["No", "Nama Siswa", "Target Total"];
+    const headerRow2 = ["", "", ""]; // Empty cells for merged headers above
+
+    // Add payment columns dynamically
+    for (let i = 1; i <= maxPayments; i++) {
+      headerRow1.push(`Bayar ke-${i}`, ""); // Merged cell placeholder
+      headerRow2.push("Tanggal", "Nominal");
+    }
+
+    headerRow1.push("Total Bayar", "Status");
+    headerRow2.push("", "");
+
+    excelData.push(headerRow1);
+    excelData.push(headerRow2);
+
+    // Add student data rows
+    classData.forEach((studentData, index) => {
+      const { student, summary, paymentHistory } = studentData;
+      const row = [index + 1, student.name, student.targetAmount];
+
+      // Add payment data
+      for (let i = 0; i < maxPayments; i++) {
+        if (paymentHistory[i]) {
+          row.push(
+            formatDate(paymentHistory[i].paidAt),
+            paymentHistory[i].amount
+          );
+        } else {
+          row.push("-", "-"); // Empty cells if no payment
+        }
+      }
+
+      // Add total and status
+      row.push(summary.totalPaid, summary.status);
+
+      excelData.push(row);
+    });
+
+    // Add summary row
+    excelData.push([]); // Empty row
     const totalTarget = classData.reduce(
       (sum, s) => sum + s.student.targetAmount,
       0
@@ -96,102 +143,64 @@ const HistoryKelas = () => {
       (sum, s) => sum + s.summary.totalPaid,
       0
     );
-    const totalRemaining = classData.reduce(
-      (sum, s) => sum + s.summary.remainingAmount,
-      0
-    );
-    const lunasCount = classData.filter(
-      (s) => s.summary.status === "Lunas"
-    ).length;
-    const belumLunasCount = classData.filter(
-      (s) => s.summary.status === "Belum Lunas"
-    ).length;
-    const belumBayarCount = classData.filter(
-      (s) => s.summary.status === "Belum Dibayar"
-    ).length;
 
-    excelData.push(
-      ["RINGKASAN KELAS"],
-      ["Total Target Pembayaran", totalTarget],
-      ["Total Sudah Dibayar", totalPaid],
-      ["Total Sisa Pembayaran", totalRemaining],
-      [
-        "Persentase Terkumpul",
-        `${
-          totalTarget > 0 ? ((totalPaid / totalTarget) * 100).toFixed(2) : 0
-        }%`,
-      ],
-      [],
-      ["Siswa Lunas", lunasCount],
-      ["Siswa Belum Lunas", belumLunasCount],
-      ["Siswa Belum Dibayar", belumBayarCount],
-      [],
-      []
-    );
-
-    // Add each student's data
-    classData.forEach((studentData, index) => {
-      const { student, summary, paymentHistory } = studentData;
-
-      excelData.push(
-        [`${index + 1}. ${student.name.toUpperCase()}`],
-        ["NIS", student.nis],
-        ["Kelas", student.class],
-        ["Target Pembayaran", student.targetAmount],
-        ["Sudah Dibayar", summary.totalPaid],
-        ["Sisa Pembayaran", summary.remainingAmount],
-        ["Status", summary.status],
-        ["Persentase", `${summary.paymentPercentage}%`],
-        [],
-        ["DETAIL PEMBAYARAN"],
-        [
-          "No",
-          "Pembayaran Ke",
-          "Jumlah",
-          "Tanggal",
-          "Metode",
-          "Dikumpulkan Oleh",
-          "Catatan",
-        ]
-      );
-
-      if (paymentHistory.length > 0) {
-        paymentHistory.forEach((payment, idx) => {
-          excelData.push([
-            idx + 1,
-            `Bayar ke-${payment.paymentNumber}`,
-            payment.amount,
-            formatDate(payment.paidAt),
-            payment.method,
-            payment.collectedBy?.name || payment.collectedBy?.username || "-",
-            payment.note || "-",
-          ]);
-        });
-      } else {
-        excelData.push(["Belum ada pembayaran"]);
-      }
-
-      excelData.push([], []); // Spacing between students
-    });
+    excelData.push([
+      "",
+      "TOTAL",
+      totalTarget,
+      ...Array(maxPayments * 2).fill(""),
+      totalPaid,
+      "",
+    ]);
 
     // Create workbook and worksheet
     const wb = XLSX.utils.book_new();
     const ws = XLSX.utils.aoa_to_sheet(excelData);
 
-    // Set column widths
-    ws["!cols"] = [
-      { wch: 5 },
-      { wch: 20 },
-      { wch: 15 },
-      { wch: 12 },
-      { wch: 10 },
-      { wch: 20 },
-      { wch: 25 },
+    // Merge cells for title
+    ws["!merges"] = [
+      { s: { r: 0, c: 0 }, e: { r: 0, c: headerRow1.length - 1 } }, // Title row
+      { s: { r: 1, c: 0 }, e: { r: 1, c: headerRow1.length - 1 } }, // Subtitle row
     ];
+
+    // Merge cells for payment headers (Bayar ke-1, Bayar ke-2, etc.)
+    for (let i = 0; i < maxPayments; i++) {
+      const colStart = 3 + i * 2; // Starting column for each payment
+      ws["!merges"].push({
+        s: { r: 4, c: colStart }, // Header row 1
+        e: { r: 4, c: colStart + 1 }, // Merge 2 columns
+      });
+    }
+
+    // Set column widths
+    const colWidths = [
+      { wch: 5 }, // No
+      { wch: 25 }, // Nama Siswa
+      { wch: 15 }, // Target Total
+    ];
+
+    // Add widths for payment columns
+    for (let i = 0; i < maxPayments; i++) {
+      colWidths.push({ wch: 12 }); // Tanggal
+      colWidths.push({ wch: 15 }); // Nominal
+    }
+
+    colWidths.push({ wch: 15 }); // Total Bayar
+    colWidths.push({ wch: 15 }); // Status
+
+    ws["!cols"] = colWidths;
+
+    // Apply title style
+    if (ws["A1"]) {
+      ws["A1"].s = {
+        font: { bold: true, sz: 16 },
+        alignment: { horizontal: "center", vertical: "center" },
+      };
+    }
 
     XLSX.utils.book_append_sheet(wb, ws, `Kelas ${className}`);
 
-    const filename = `History_Kelas_${className}_${new Date()
+    const filename = `Rekap_Data_Komite_Kelas_${className}_${new Date()
       .toISOString()
       .slice(0, 10)}.xlsx`;
     XLSX.writeFile(wb, filename);
