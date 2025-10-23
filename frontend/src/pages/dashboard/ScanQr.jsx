@@ -1,19 +1,16 @@
 import { useState, useEffect, useRef } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Html5Qrcode } from "html5-qrcode";
 
 const ScanQr = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+
   const [isScanning, setIsScanning] = useState(false);
   const [cameraStatus, setCameraStatus] = useState("Belum dimulai");
   const [cameras, setCameras] = useState([]);
   const [currentCameraIndex, setCurrentCameraIndex] = useState(0);
   const scannerRef = useRef(null);
   const lastScanRef = useRef(0);
-
-  // Check if redirected from direct access
-  const redirectMessage = location.state?.message;
 
   // Function to extract NIS from QR data
   const extractNIS = (text) => {
@@ -54,9 +51,6 @@ const ScanQr = () => {
 
     setCameraStatus(`✅ QR Berhasil! NIS: ${nis} - Mengalihkan...`);
     lastScanRef.current = now;
-
-    // Set flag bahwa user sudah scan QR
-    sessionStorage.setItem('fromQRScan', 'true');
 
     // Stop scanner before redirect
     if (scannerRef.current) {
@@ -248,24 +242,6 @@ const ScanQr = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50 py-4 px-4 sm:py-6 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto">
-        {/* Redirect Message */}
-        {redirectMessage && (
-          <div className="mb-6 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-lg">
-            <div className="flex">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-yellow-700 font-medium">
-                  {redirectMessage}
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Header */}
         <div className="text-center mb-6 sm:mb-8">
           <div className="inline-flex items-center justify-center w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl mb-4 shadow-lg">
