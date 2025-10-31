@@ -12,5 +12,13 @@ module.exports = function(app) {
 
   app.post("/api/payments", [authJwt.verifyToken], controller.createPayment);
   app.get("/api/payments", [authJwt.verifyToken], controller.getAllPayments);
+  //edit payment
+  app.put("/api/payments/:id", [authJwt.verifyToken], controller.editPayment);
+  //delete payment
+  app.delete(
+    "/api/payments/:id",
+    [authJwt.verifyToken, authJwt.isAdmin],
+    controller.deletePayment
+  );
 
 };
