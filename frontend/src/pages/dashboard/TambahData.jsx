@@ -18,6 +18,8 @@ const TambahData = () => {
   const [error, setError] = useState(null);
   const [submitting, setSubmitting] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
+  const [paymentAmount, setPaymentAmount] = useState(""); // formatted display (e.g. "100.000")
+  const [paymentAmountRaw, setPaymentAmountRaw] = useState(""); // numeric string (e.g. "100000")
 
   useEffect(() => {
     const loadPaymentInfo = async () => {
@@ -43,7 +45,8 @@ const TambahData = () => {
     setSuccessMessage("");
     setError(null);
 
-    const amount = e.target.PaymentAmount.value;
+    // Use raw numeric string from state (unformatted)
+    const amount = paymentAmountRaw;
     const paidAt = e.target.PaymentDate.value;
     const note = e.target.note.value;
 
@@ -111,6 +114,28 @@ const TambahData = () => {
       currency: "IDR",
       minimumFractionDigits: 0,
     }).format(amount);
+  };
+
+  // Helpers for formatting input while keeping raw numeric value
+  const formatNumberForDisplay = (numericString) => {
+    if (!numericString) return "";
+    try {
+      // remove leading zeros
+      const normalized = String(Number(numericString));
+      return new Intl.NumberFormat("id-ID").format(Number(normalized));
+    } catch {
+      return numericString;
+    }
+  };
+
+  const handleAmountChange = (e) => {
+    const input = e.target.value;
+    // strip non-digits
+    const digits = input.replace(/\D/g, "");
+    setPaymentAmountRaw(digits);
+    // keep empty field empty
+    const formatted = digits ? formatNumberForDisplay(digits) : "";
+    setPaymentAmount(formatted);
   };
 
   // Loading state
@@ -597,9 +622,12 @@ const TambahData = () => {
                   <input
                     className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
                     id="PaymentAmount"
-                    type="number"
+                    name="PaymentAmount"
+                    type="text"
+                    inputMode="numeric"
                     placeholder="0"
-                    min="1"
+                    value={paymentAmount}
+                    onChange={handleAmountChange}
                     required
                   />
                 </div>
