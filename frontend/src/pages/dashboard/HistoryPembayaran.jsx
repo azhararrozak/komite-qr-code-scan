@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { getStudentPaymentHistory } from "../../services/reportService";
-import { updatePayment } from "../../services/paymentService";
+//import { updatePayment } from "../../services/paymentService";
 import toast from "react-hot-toast";
 import * as XLSX from "xlsx";
 
@@ -92,41 +92,41 @@ const HistoryPembayaran = () => {
     setEditDate("");
   };
 
-  const handleEditSubmit = async (e) => {
-    e.preventDefault();
+  // const handleEditSubmit = async (e) => {
+  //   e.preventDefault();
 
-    if (!editAmountRaw || isNaN(editAmountRaw) || editAmountRaw <= 0) {
-      toast.error("Masukkan jumlah pembayaran yang valid");
-      return;
-    }
+  //   if (!editAmountRaw || isNaN(editAmountRaw) || editAmountRaw <= 0) {
+  //     toast.error("Masukkan jumlah pembayaran yang valid");
+  //     return;
+  //   }
 
-    setSubmitting(true);
-    const loadingToast = toast.loading("Memperbarui pembayaran...");
+  //   setSubmitting(true);
+  //   const loadingToast = toast.loading("Memperbarui pembayaran...");
 
-    try {
-      const updateData = {
-        amount: parseFloat(editAmountRaw),
-        note: editNote,
-        paidAt: editDate ? new Date(editDate) : editingPayment.paidAt,
-      };
+  //   try {
+  //     const updateData = {
+  //       amount: parseFloat(editAmountRaw),
+  //       note: editNote,
+  //       paidAt: editDate ? new Date(editDate) : editingPayment.paidAt,
+  //     };
 
-      await updatePayment(editingPayment._id, updateData);
+  //     //await updatePayment(editingPayment._id, updateData);
 
-      toast.dismiss(loadingToast);
-      toast.success("Pembayaran berhasil diperbarui!");
+  //     toast.dismiss(loadingToast);
+  //     toast.success("Pembayaran berhasil diperbarui!");
 
-      // Refresh data
-      const data = await getStudentPaymentHistory(nis.trim());
-      setHistoryData(data);
+  //     // Refresh data
+  //     const data = await getStudentPaymentHistory(nis.trim());
+  //     setHistoryData(data);
 
-      closeEditModal();
-    } catch (error) {
-      toast.dismiss(loadingToast);
-      toast.error(error.message || "Gagal memperbarui pembayaran");
-    } finally {
-      setSubmitting(false);
-    }
-  };
+  //     closeEditModal();
+  //   } catch (error) {
+  //     toast.dismiss(loadingToast);
+  //     toast.error(error.message || "Gagal memperbarui pembayaran");
+  //   } finally {
+  //     setSubmitting(false);
+  //   }
+  // };
 
   const downloadExcel = () => {
     if (!historyData) return;
