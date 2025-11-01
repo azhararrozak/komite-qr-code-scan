@@ -12,12 +12,23 @@ export async function fetchPaymentInfo(nis) {
 }
 
 export function createPayment(paymentData) {
-  return api.post('/payments', paymentData)
-    .then(response => response.data)
-    .catch(err => {
+  return api
+    .post("/payments", paymentData)
+    .then((response) => response.data)
+    .catch((err) => {
       const message = err?.response?.data?.message || err.message;
       throw new Error(message);
     });
 }
 
-export default { fetchPaymentInfo, createPayment };
+export function updatePayment(paymentId, paymentData) {
+  return api
+    .put(`/payments/${paymentId}`, paymentData)
+    .then((response) => response.data)
+    .catch((err) => {
+      const message = err?.response?.data?.message || err.message;
+      throw new Error(message);
+    });
+}
+
+export default { fetchPaymentInfo, createPayment, updatePayment };

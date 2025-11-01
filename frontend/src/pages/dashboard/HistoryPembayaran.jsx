@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { getStudentPaymentHistory } from "../../services/reportService";
+import { updatePayment } from "../../services/paymentService";
 import toast from "react-hot-toast";
 import * as XLSX from "xlsx";
 
@@ -7,6 +8,15 @@ const HistoryPembayaran = () => {
   const [nis, setNis] = useState("");
   const [loading, setLoading] = useState(false);
   const [historyData, setHistoryData] = useState(null);
+
+  // Edit modal states
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingPayment, setEditingPayment] = useState(null);
+  const [editAmount, setEditAmount] = useState(""); // formatted display
+  const [editAmountRaw, setEditAmountRaw] = useState(""); // raw numeric
+  const [editNote, setEditNote] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -44,6 +54,78 @@ const HistoryPembayaran = () => {
       currency: "IDR",
       minimumFractionDigits: 0,
     }).format(amount);
+  };
+
+  const formatNumberForDisplay = (numericString) => {
+    if (!numericString) return "";
+    try {
+      const normalized = String(Number(numericString));
+      return new Intl.NumberFormat("id-ID").format(Number(normalized));
+    } catch {
+      return numericString;
+    }
+  };
+
+  const handleEditAmountChange = (e) => {
+    const input = e.target.value;
+    const digits = input.replace(/\D/g, "");
+    setEditAmountRaw(digits);
+    const formatted = digits ? formatNumberForDisplay(digits) : "";
+    setEditAmount(formatted);
+  };
+
+  const openEditModal = (payment) => {
+    setEditingPayment(payment);
+    setEditAmountRaw(String(payment.amount));
+    setEditAmount(formatNumberForDisplay(String(payment.amount)));
+    setEditNote(payment.note || "");
+    setEditDate(new Date(payment.paidAt).toISOString().split("T")[0]);
+    setShowEditModal(true);
+  };
+
+  const closeEditModal = () => {
+    setShowEditModal(false);
+    setEditingPayment(null);
+    setEditAmount("");
+    setEditAmountRaw("");
+    setEditNote("");
+    setEditDate("");
+  };
+
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!editAmountRaw || isNaN(editAmountRaw) || editAmountRaw <= 0) {
+      toast.error("Masukkan jumlah pembayaran yang valid");
+      return;
+    }
+
+    setSubmitting(true);
+    const loadingToast = toast.loading("Memperbarui pembayaran...");
+
+    try {
+      const updateData = {
+        amount: parseFloat(editAmountRaw),
+        note: editNote,
+        paidAt: editDate ? new Date(editDate) : editingPayment.paidAt,
+      };
+
+      await updatePayment(editingPayment._id, updateData);
+
+      toast.dismiss(loadingToast);
+      toast.success("Pembayaran berhasil diperbarui!");
+
+      // Refresh data
+      const data = await getStudentPaymentHistory(nis.trim());
+      setHistoryData(data);
+
+      closeEditModal();
+    } catch (error) {
+      toast.dismiss(loadingToast);
+      toast.error(error.message || "Gagal memperbarui pembayaran");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const downloadExcel = () => {
@@ -303,6 +385,9 @@ const HistoryPembayaran = () => {
                           <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Catatan
                           </th>
+                          <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Aksi
+                          </th>
                         </tr>
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-200">
@@ -332,6 +417,14 @@ const HistoryPembayaran = () => {
                             </td>
                             <td className="px-6 py-4 text-sm text-gray-900">
                               {payment.note || "-"}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm">
+                              <button
+                                onClick={() => openEditModal(payment)}
+                                className="text-indigo-600 hover:text-indigo-900 font-medium"
+                              >
+                                Edit
+                              </button>
                             </td>
                           </tr>
                         ))}
@@ -396,6 +489,16 @@ const HistoryPembayaran = () => {
                             </div>
                           )}
                         </div>
+
+                        {/* Edit Button */}
+                        <div className="mt-3 pt-3 border-t border-gray-200">
+                          <button
+                            onClick={() => openEditModal(payment)}
+                            className="w-full px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 transition-colors"
+                          >
+                            Edit Pembayaran
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -446,6 +549,160 @@ const HistoryPembayaran = () => {
             <p className="text-gray-500">
               Masukkan NIS siswa untuk melihat riwayat pembayaran
             </p>
+          </div>
+        )}
+
+        {/* Edit Payment Modal */}
+        {showEditModal && editingPayment && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+            <div className="bg-white rounded-lg shadow-xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+              {/* Modal Header */}
+              <div className="bg-gradient-to-r from-indigo-600 to-indigo-700 px-6 py-4 flex justify-between items-center">
+                <h3 className="text-xl font-semibold text-white">
+                  Edit Pembayaran
+                </h3>
+                <button
+                  onClick={closeEditModal}
+                  className="text-white hover:text-gray-200 transition-colors"
+                >
+                  <svg
+                    className="w-6 h-6"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Modal Body */}
+              <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
+                <div>
+                  <p className="text-sm text-gray-600 mb-1">Siswa</p>
+                  <p className="font-semibold text-gray-900">
+                    {historyData.student.name}
+                  </p>
+                  <p className="text-sm text-gray-500">
+                    Pembayaran ke-{editingPayment.paymentNumber}
+                  </p>
+                </div>
+
+                {/* Amount Input */}
+                <div>
+                  <label
+                    htmlFor="editAmount"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Jumlah Pembayaran <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <span className="text-gray-500 text-sm">Rp</span>
+                    </div>
+                    <input
+                      id="editAmount"
+                      type="text"
+                      inputMode="numeric"
+                      value={editAmount}
+                      onChange={handleEditAmountChange}
+                      className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                      placeholder="0"
+                      required
+                    />
+                  </div>
+                  <p className="mt-1 text-xs text-gray-500">
+                    Sisa pembayaran:{" "}
+                    {formatCurrency(historyData.summary.remainingAmount)}
+                  </p>
+                </div>
+
+                {/* Date Input */}
+                <div>
+                  <label
+                    htmlFor="editDate"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Tanggal Pembayaran
+                  </label>
+                  <input
+                    id="editDate"
+                    type="date"
+                    value={editDate}
+                    onChange={(e) => setEditDate(e.target.value)}
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition"
+                  />
+                </div>
+
+                {/* Note Input */}
+                <div>
+                  <label
+                    htmlFor="editNote"
+                    className="block text-sm font-medium text-gray-700 mb-2"
+                  >
+                    Catatan
+                  </label>
+                  <textarea
+                    id="editNote"
+                    value={editNote}
+                    onChange={(e) => setEditNote(e.target.value)}
+                    rows="3"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition resize-none"
+                    placeholder="Tambahkan catatan (opsional)"
+                  />
+                </div>
+
+                {/* Action Buttons */}
+                <div className="flex gap-3 pt-4">
+                  <button
+                    type="button"
+                    onClick={closeEditModal}
+                    className="flex-1 px-4 py-3 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+                    disabled={submitting}
+                  >
+                    Batal
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="flex-1 px-4 py-3 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-semibold rounded-lg hover:from-indigo-700 hover:to-indigo-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+                  >
+                    {submitting ? (
+                      <>
+                        <svg
+                          className="animate-spin -ml-1 mr-2 h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
+                        </svg>
+                        Menyimpan...
+                      </>
+                    ) : (
+                      "Simpan Perubahan"
+                    )}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
       </div>
