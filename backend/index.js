@@ -80,8 +80,12 @@ async function initial() {
         await new Role({
           name: "admin",
         }).save();
-  
-        console.log("Added 'user' and 'admin' to roles collection");
+
+        await new Role({
+          name: "superadmin",
+        }).save();
+
+        console.log("Added 'user', 'admin', 'superadmin' to roles collection");
       }
     } catch (err) {
       console.error("Error during initial role setup:", err);

@@ -10,9 +10,13 @@ module.exports = function(app) {
     next();
   });
 
-  app.post("/api/users/walikelas", [authJwt.verifyToken, authJwt.isAdmin], controller.createUserWaliKelas);
-  app.put("/api/users/walikelas/:id", [authJwt.verifyToken, authJwt.isAdmin], controller.editUserWaliKelas);
-  app.delete("/api/users/walikelas/:id", [authJwt.verifyToken, authJwt.isAdmin], controller.deleteUserWaliKelas);
-  app.get("/api/users/walikelas", [authJwt.verifyToken, authJwt.isAdmin], controller.getAllWaliKelas);
-   
+  app.post("/api/users/walikelas", [authJwt.verifyToken, authJwt.isSuperAdmin], controller.createUserWaliKelas);
+  app.put("/api/users/walikelas/:id", [authJwt.verifyToken, authJwt.isSuperAdmin], controller.editUserWaliKelas);
+  app.delete("/api/users/walikelas/:id", [authJwt.verifyToken, authJwt.isSuperAdmin], controller.deleteUserWaliKelas);
+  app.get("/api/users/walikelas", [authJwt.verifyToken, authJwt.isSuperAdmin], controller.getAllWaliKelas);
+
+  app.post("/api/users/admin", [authJwt.verifyToken, authJwt.isSuperAdmin], controller.createAdminUser);
+  app.get("/api/users/admin", [authJwt.verifyToken, authJwt.isSuperAdmin], controller.getAllAdminUsers);
+  app.delete("/api/users/admin/:id", [authJwt.verifyToken, authJwt.isSuperAdmin], controller.deleteAdminUser);
+
 };
